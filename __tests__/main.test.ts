@@ -66,7 +66,7 @@ function mockInputs(inputs: Record<string, string> = {}): void {
  */
 function verifyStandardResponse(): void {
   expect(core.setOutput).toHaveBeenNthCalledWith(1, 'response', 'Hello, user!')
-  expect(core.setOutput).toHaveBeenNthCalledWith(2, 'response-file', expect.stringContaining('modelResponse.txt'))
+  expect(core.setOutput).toHaveBeenNthCalledWith(2, 'response-file', expect.stringContaining('modelResponse-'))
 }
 
 vi.mock('fs', () => ({
