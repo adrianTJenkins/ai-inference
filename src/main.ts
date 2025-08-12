@@ -18,6 +18,11 @@ import {
  * @returns Resolves when the action is complete.
  */
 export async function run(): Promise<void> {
+  let responseFile: tmp.FileResult | null = null
+
+  // Set up graceful cleanup for temporary files on process exit
+  tmp.setGracefulCleanup()
+
   try {
     const promptFilePath = core.getInput('prompt-file')
     const inputVariables = core.getInput('input')
@@ -91,10 +96,9 @@ export async function run(): Promise<void> {
     core.setOutput('response', modelResponse || '')
 
     // Create a secure temporary file instead of using the temp directory directly
-    const responseFile = tmp.fileSync({
+    responseFile = tmp.fileSync({
       prefix: 'modelResponse-',
       postfix: '.txt',
-      keep: true, // Keep the file so the action can read it
     })
 
     core.setOutput('response-file', responseFile.name)
@@ -110,6 +114,16 @@ export async function run(): Promise<void> {
     }
     // Force exit to prevent hanging on open connections
     process.exit(1)
+  } finally {
+    // Explicit cleanup of temporary file if it was created
+    if (responseFile) {
+      try {
+        responseFile.removeCallback()
+      } catch (cleanupError) {
+        // Log cleanup errors but don't fail the action
+        core.warning(`Failed to cleanup temporary file: ${cleanupError}`)
+      }
+    }
   }
 
   // Force exit to prevent hanging on open connections
