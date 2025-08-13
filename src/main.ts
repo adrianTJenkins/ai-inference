@@ -1,7 +1,6 @@
 import * as core from '@actions/core'
 import * as fs from 'fs'
-import * as os from 'os'
-import * as path from 'path'
+import * as tmp from 'tmp'
 import {connectToGitHubMCP} from './mcp.js'
 import {simpleInference, mcpInference} from './inference.js'
 import {loadContentFromFileOrInput, buildInferenceRequest} from './helpers.js'
@@ -13,14 +12,17 @@ import {
   parseFileTemplateVariables,
 } from './prompt.js'
 
-const RESPONSE_FILE = 'modelResponse.txt'
-
 /**
  * The main function for the action.
  *
  * @returns Resolves when the action is complete.
  */
 export async function run(): Promise<void> {
+  let responseFile: tmp.FileResult | null = null
+
+  // Set up graceful cleanup for temporary files on process exit
+  tmp.setGracefulCleanup()
+
   try {
     const promptFilePath = core.getInput('prompt-file')
     const inputVariables = core.getInput('input')
@@ -93,11 +95,16 @@ export async function run(): Promise<void> {
 
     core.setOutput('response', modelResponse || '')
 
-    const responseFilePath = path.join(tempDir(), RESPONSE_FILE)
-    core.setOutput('response-file', responseFilePath)
+    // Create a secure temporary file instead of using the temp directory directly
+    responseFile = tmp.fileSync({
+      prefix: 'modelResponse-',
+      postfix: '.txt',
+    })
+
+    core.setOutput('response-file', responseFile.name)
 
     if (modelResponse && modelResponse !== '') {
-      fs.writeFileSync(responseFilePath, modelResponse, 'utf-8')
+      fs.writeFileSync(responseFile.name, modelResponse, 'utf-8')
     }
   } catch (error) {
     if (error instanceof Error) {
@@ -107,13 +114,18 @@ export async function run(): Promise<void> {
     }
     // Force exit to prevent hanging on open connections
     process.exit(1)
+  } finally {
+    // Explicit cleanup of temporary file if it was created
+    if (responseFile) {
+      try {
+        responseFile.removeCallback()
+      } catch (cleanupError) {
+        // Log cleanup errors but don't fail the action
+        core.warning(`Failed to cleanup temporary file: ${cleanupError}`)
+      }
+    }
   }
 
   // Force exit to prevent hanging on open connections
   process.exit(0)
-}
-
-function tempDir(): string {
-  const tempDirectory = process.env['RUNNER_TEMP'] || os.tmpdir()
-  return tempDirectory
 }
