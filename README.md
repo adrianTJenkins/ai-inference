@@ -162,6 +162,9 @@ This action now supports **read-only** integration with the GitHub-hosted Model
 Context Protocol (MCP) server, which provides access to GitHub tools like
 repository management, issue tracking, and pull request operations.
 
+> [!NOTE]
+> The GitHub MCP integration requires a Personal Access Token (PAT) and cannot use the built-in `GITHUB_TOKEN`.
+
 ```yaml
 steps:
   - name: AI Inference with GitHub Tools
