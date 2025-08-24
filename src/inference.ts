@@ -53,21 +53,10 @@ export async function simpleInference(request: InferenceRequest): Promise<string
     chatCompletionRequest.response_format = request.responseFormat as any
   }
 
-  try {
-    const response = await client.chat.completions.create(chatCompletionRequest)
-
-    if ('choices' in response) {
-      const modelResponse = response.choices[0]?.message?.content
-      core.info(`Model response: ${modelResponse || 'No response content'}`)
-      return modelResponse || null
-    } else {
-      core.error(`Unexpected response format from API: ${JSON.stringify(response)}`)
-      return null
-    }
-  } catch (error) {
-    core.error(`API error: ${error}`)
-    throw error
-  }
+  const response = await chatCompletion(client, chatCompletionRequest, 'simpleInference')
+  const modelResponse = response.choices[0]?.message?.content
+  core.info(`Model response: ${modelResponse || 'No response content'}`)
+  return modelResponse || null
 }
 
 /**
@@ -112,11 +101,7 @@ export async function mcpInference(
     }
 
     try {
-      const response = await client.chat.completions.create(chatCompletionRequest)
-
-      if (!('choices' in response)) {
-        throw new Error(`Unexpected response format from API: ${JSON.stringify(response)}`)
-      }
+      const response = await chatCompletion(client, chatCompletionRequest, `mcpInference iteration ${iterationCount}`)
 
       const assistantMessage = response.choices[0]?.message
       const modelResponse = assistantMessage?.content
@@ -133,20 +118,13 @@ export async function mcpInference(
       if (!toolCalls || toolCalls.length === 0) {
         core.info('No tool calls requested, ending GitHub MCP inference loop')
 
-        // If we have a response format set and we haven't explicitly run one final message iteration,
-        // do another loop with the response format set
         if (request.responseFormat && !finalMessage) {
           core.info('Making one more MCP loop with the requested response format...')
-
-          // Add a user message requesting JSON format and try again
           messages.push({
             role: 'user',
             content: `Please provide your response in the exact ${request.responseFormat.type} format specified.`,
           })
-
           finalMessage = true
-
-          // Continue the loop to get a properly formatted response
           continue
         } else {
           return modelResponse || null
@@ -154,13 +132,8 @@ export async function mcpInference(
       }
 
       core.info(`Model requested ${toolCalls.length} tool calls`)
-
-      // Execute all tool calls via GitHub MCP
       const toolResults = await executeToolCalls(githubMcpClient.client, toolCalls as ToolCall[])
-
-      // Add tool results to the conversation
       messages.push(...toolResults)
-
       core.info('Tool results added, continuing conversation...')
     } catch (error) {
       core.error(`OpenAI API error: ${error}`)
@@ -177,4 +150,44 @@ export async function mcpInference(
     .find(msg => msg.role === 'assistant')
 
   return lastAssistantMessage?.content || null
+}
+
+/**
+ * Wrapper around OpenAI chat.completions.create with defensive handling for cases where
+ * the SDK returns a raw string (e.g., unexpected content-type or streaming body) instead of
+ * a parsed object. Ensures an object with a 'choices' array is returned or throws a descriptive error.
+ */
+async function chatCompletion(
+  client: OpenAI,
+  params: OpenAI.Chat.Completions.ChatCompletionCreateParams,
+  context: string,
+): Promise<OpenAI.Chat.Completions.ChatCompletion> {
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let response: any = await client.chat.completions.create(params)
+    core.debug(`${context}: raw response typeof=${typeof response}`)
+
+    if (typeof response === 'string') {
+      // Attempt to parse if we unexpectedly received a string
+      try {
+        response = JSON.parse(response)
+      } catch (e) {
+        const preview = response.slice(0, 400)
+        throw new Error(
+          `${context}: Chat completion response was a string and not valid JSON (${(e as Error).message}). Preview: ${preview}`,
+        )
+      }
+    }
+
+    if (!response || typeof response !== 'object' || !('choices' in response)) {
+      const preview = JSON.stringify(response)?.slice(0, 800)
+      throw new Error(`${context}: Unexpected response shape (no choices). Preview: ${preview}`)
+    }
+
+    return response as OpenAI.Chat.Completions.ChatCompletion
+  } catch (err) {
+    // Re-throw after logging for upstream handling
+    core.error(`${context}: chatCompletion failed: ${err}`)
+    throw err
+  }
 }
