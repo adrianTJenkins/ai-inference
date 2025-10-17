@@ -27,18 +27,63 @@ export interface ToolCall {
   }
 }
 
-export interface GitHubMCPClient {
+interface MultiServerTool extends MCPTool {
+  serverId: string
+  serverName: string
+}
+
+export interface MCPServerConfig {
+  id: string
+  name: string
+  type: 'http' | 'stdio'
+
+  url?: string
+  headers?: Record<string, string>
+
+  command?: string
+  args?: string[]
+  env?: Record<string, string>
+
+  readonly?: boolean
+  priority?: number
+}
+
+export interface MCPServerClient {
+  config: MCPServerConfig
   client: Client
   tools: Array<MCPTool>
+  connected: boolean
+}
+
+export interface MultiMCPManager {
+  servers: Map<string, MCPServerClient>
+  toolRegistry: Map<string, MCPServerClient>
+
+  connectToServers(configs: MCPServerConfig[]): Promise<void>
+  executeToolCall(toolCall: ToolCall): Promise<ToolResult>
+  getAllTools(): Array<MultiServerTool>
 }
 
 /**
  * Connect to the GitHub MCP server and retrieve available tools
  */
-export async function connectToGitHubMCP(token: string): Promise<GitHubMCPClient | null> {
+export async function connectToGitHubMCP(token: string): Promise<MCPServerClient | null> {
   const githubMcpUrl = 'https://api.githubcopilot.com/mcp/'
 
   core.info('Connecting to GitHub MCP server...')
+
+  const config: MCPServerConfig = {
+    id: 'github',
+    name: 'GitHub MCP',
+    type: 'http',
+    url: githubMcpUrl,
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'X-MCP-Readonly': 'true',
+    },
+    readonly: true,
+    priority: 1,
+  }
 
   const transport = new StreamableHTTPClientTransport(new URL(githubMcpUrl), {
     requestInit: {
@@ -79,7 +124,12 @@ export async function connectToGitHubMCP(token: string): Promise<GitHubMCPClient
 
   core.info(`Mapped ${tools.length} GitHub MCP tools for Azure AI Inference`)
 
-  return {client, tools}
+  return {
+    config,
+    client,
+    tools,
+    connected: true,
+  }
 }
 
 /**
