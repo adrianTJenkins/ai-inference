@@ -1,6 +1,6 @@
 import * as core from '@actions/core'
 import OpenAI from 'openai'
-import {GitHubMCPClient, executeToolCalls, ToolCall} from './mcp.js'
+import {MCPServerClient, executeToolCalls, ToolCall} from './mcp.js'
 
 interface ChatMessage {
   role: 'system' | 'user' | 'assistant' | 'tool'
@@ -64,7 +64,7 @@ export async function simpleInference(request: InferenceRequest): Promise<string
  */
 export async function mcpInference(
   request: InferenceRequest,
-  githubMcpClient: GitHubMCPClient,
+  githubMcpClient: MCPServerClient,
 ): Promise<string | null> {
   core.info('Running GitHub MCP inference with tools')
 
