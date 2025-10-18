@@ -59,7 +59,20 @@ describe('mcp.ts', () => {
       const result = await connectToGitHubMCP(token)
 
       expect(result).not.toBeNull()
+      expect(result?.config).toEqual({
+        id: 'github',
+        name: 'GitHub MCP',
+        type: 'http',
+        url: 'https://api.githubcopilot.com/mcp/',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'X-MCP-Readonly': 'true',
+        },
+        readonly: true,
+        priority: 1,
+      })
       expect(result?.client).toBe(mockClient)
+      expect(result?.connected).toBe(true)
       expect(result?.tools).toHaveLength(2)
       expect(result?.tools[0]).toEqual({
         type: 'function',
@@ -96,6 +109,20 @@ describe('mcp.ts', () => {
       const result = await connectToGitHubMCP(token)
 
       expect(result).not.toBeNull()
+      expect(result?.config).toEqual({
+        id: 'github',
+        name: 'GitHub MCP',
+        type: 'http',
+        url: 'https://api.githubcopilot.com/mcp/',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'X-MCP-Readonly': 'true',
+        },
+        readonly: true,
+        priority: 1,
+      })
+      expect(result?.client).toBe(mockClient)
+      expect(result?.connected).toBe(true)
       expect(result?.tools).toHaveLength(0)
       expect(core.info).toHaveBeenCalledWith('Retrieved 0 tools from GitHub MCP server')
       expect(core.info).toHaveBeenCalledWith('Mapped 0 GitHub MCP tools for Azure AI Inference')
@@ -110,6 +137,20 @@ describe('mcp.ts', () => {
       const result = await connectToGitHubMCP(token)
 
       expect(result).not.toBeNull()
+      expect(result?.config).toEqual({
+        id: 'github',
+        name: 'GitHub MCP',
+        type: 'http',
+        url: 'https://api.githubcopilot.com/mcp/',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'X-MCP-Readonly': 'true',
+        },
+        readonly: true,
+        priority: 1,
+      })
+      expect(result?.client).toBe(mockClient)
+      expect(result?.connected).toBe(true)
       expect(result?.tools).toHaveLength(0)
       expect(core.info).toHaveBeenCalledWith('Retrieved 0 tools from GitHub MCP server')
     })
