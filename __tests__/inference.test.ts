@@ -142,6 +142,14 @@ describe('inference.ts', () => {
 
   describe('mcpInference', () => {
     const mockMcpClient = {
+      config: {
+        id: 'test',
+        name: 'Test MCP',
+        type: 'http' as const,
+        url: 'https://test.example.com',
+        readonly: true,
+        priority: 1,
+      },
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       client: {} as any,
       tools: [
@@ -154,6 +162,7 @@ describe('inference.ts', () => {
           },
         },
       ],
+      connected: true,
     }
 
     it('performs inference without tool calls', async () => {
