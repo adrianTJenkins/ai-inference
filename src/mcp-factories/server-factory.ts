@@ -79,17 +79,23 @@ export class MCPServerRegistry {
     for (const factory of this.getAllFactories()) {
       const serverId = factory.getId()
       const serverName = factory.getName()
-      const credentials = credentialsMap.get(serverId)
+      let credentials = credentialsMap.get(serverId)
 
       if (!credentials) {
-        unavailable.push({
-          serverId,
-          serverName,
-          status: 'credentials-missing',
-          reason: `No credentials provided for ${serverName}`,
-          lastChecked: new Date(),
-        })
-        continue
+        // Check if this server requires credentials by testing with empty credentials
+        if (factory.isCredentialsValid({})) {
+          // Server doesn't require credentials, use empty credentials
+          credentials = {}
+        } else {
+          unavailable.push({
+            serverId,
+            serverName,
+            status: 'credentials-missing',
+            reason: `No credentials provided for ${serverName}`,
+            lastChecked: new Date(),
+          })
+          continue
+        }
       }
 
       if (!factory.isCredentialsValid(credentials)) {

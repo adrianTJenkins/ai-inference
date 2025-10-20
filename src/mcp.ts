@@ -176,6 +176,9 @@ export function createServerConfigs(
   sentryToken?: string,
   datadogApiKey?: string,
   datadogAppKey?: string,
+  azureClientId?: string,
+  azureClientSecret?: string,
+  azureTenantId?: string,
 ): MCPServerConfig[] {
   const registry = new MCPServerRegistry()
 
@@ -200,8 +203,9 @@ export function createServerConfigs(
     credentialsMap.set('datadog', {apiKey: datadogApiKey, appKey: datadogAppKey})
   }
 
-  // Azure doesn't require specific credentials
-  credentialsMap.set('azure', {})
+  if (azureClientId && azureClientSecret && azureTenantId) {
+    credentialsMap.set('azure', {clientId: azureClientId, clientSecret: azureClientSecret, tenantId: azureTenantId})
+  }
 
   return registry.createConfigs(credentialsMap)
 }
