@@ -2,7 +2,7 @@ import require$$0 from 'os';
 import require$$0$1 from 'crypto';
 import * as fs from 'fs';
 import fs__default from 'fs';
-import require$$1$4 from 'path';
+import require$$0$a from 'path';
 import require$$2 from 'http';
 import require$$3 from 'https';
 import require$$0$4 from 'net';
@@ -14,7 +14,7 @@ import require$$0$5 from 'stream';
 import require$$7 from 'buffer';
 import require$$8 from 'querystring';
 import require$$14 from 'stream/web';
-import require$$0$7 from 'node:stream';
+import require$$0$7, { PassThrough } from 'node:stream';
 import require$$1$1 from 'node:util';
 import require$$0$6 from 'node:events';
 import require$$0$8 from 'worker_threads';
@@ -28,6 +28,7 @@ import require$$6 from 'string_decoder';
 import require$$0$9 from 'diagnostics_channel';
 import require$$2$2 from 'child_process';
 import require$$6$1 from 'timers';
+import process$1 from 'node:process';
 
 var commonjsGlobal = typeof globalThis !== 'undefined' ? globalThis : typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
 
@@ -21687,11 +21688,11 @@ function requireUtil$2 () {
 }
 
 var parse;
-var hasRequiredParse;
+var hasRequiredParse$1;
 
-function requireParse () {
-	if (hasRequiredParse) return parse;
-	hasRequiredParse = 1;
+function requireParse$1 () {
+	if (hasRequiredParse$1) return parse;
+	hasRequiredParse$1 = 1;
 
 	const { maxNameValuePairSize, maxAttributeValueSize } = requireConstants$1();
 	const { isCTLExcludingHtab } = requireUtil$2();
@@ -22018,7 +22019,7 @@ function requireCookies () {
 	if (hasRequiredCookies) return cookies;
 	hasRequiredCookies = 1;
 
-	const { parseSetCookie } = requireParse();
+	const { parseSetCookie } = requireParse$1();
 	const { stringify } = requireUtil$2();
 	const { webidl } = requireWebidl();
 	const { Headers } = requireHeaders();
@@ -25511,7 +25512,7 @@ function requirePathUtils () {
 	};
 	Object.defineProperty(pathUtils, "__esModule", { value: true });
 	pathUtils.toPlatformPath = pathUtils.toWin32Path = pathUtils.toPosixPath = void 0;
-	const path = __importStar(require$$1$4);
+	const path = __importStar(require$$0$a);
 	/**
 	 * toPosixPath converts the given path to the posix form. On Windows, \\ will be
 	 * replaced with /.
@@ -25598,7 +25599,7 @@ function requireIoUtil () {
 		Object.defineProperty(exports, "__esModule", { value: true });
 		exports.getCmdPath = exports.tryGetExecutablePath = exports.isRooted = exports.isDirectory = exports.exists = exports.READONLY = exports.UV_FS_O_EXLOCK = exports.IS_WINDOWS = exports.unlink = exports.symlink = exports.stat = exports.rmdir = exports.rm = exports.rename = exports.readlink = exports.readdir = exports.open = exports.mkdir = exports.lstat = exports.copyFile = exports.chmod = void 0;
 		const fs = __importStar(fs__default);
-		const path = __importStar(require$$1$4);
+		const path = __importStar(require$$0$a);
 		_a = fs.promises
 		// export const {open} = 'fs'
 		, exports.chmod = _a.chmod, exports.copyFile = _a.copyFile, exports.lstat = _a.lstat, exports.mkdir = _a.mkdir, exports.open = _a.open, exports.readdir = _a.readdir, exports.readlink = _a.readlink, exports.rename = _a.rename, exports.rm = _a.rm, exports.rmdir = _a.rmdir, exports.stat = _a.stat, exports.symlink = _a.symlink, exports.unlink = _a.unlink;
@@ -25788,7 +25789,7 @@ function requireIo () {
 	Object.defineProperty(io, "__esModule", { value: true });
 	io.findInPath = io.which = io.mkdirP = io.rmRF = io.mv = io.cp = void 0;
 	const assert_1 = require$$0$3;
-	const path = __importStar(require$$1$4);
+	const path = __importStar(require$$0$a);
 	const ioUtil = __importStar(requireIoUtil());
 	/**
 	 * Copies a file or folder.
@@ -26096,7 +26097,7 @@ function requireToolrunner () {
 	const os = __importStar(require$$0);
 	const events = __importStar(require$$4);
 	const child = __importStar(require$$2$2);
-	const path = __importStar(require$$1$4);
+	const path = __importStar(require$$0$a);
 	const io = __importStar(requireIo());
 	const ioUtil = __importStar(requireIoUtil());
 	const timers_1 = require$$6$1;
@@ -26940,7 +26941,7 @@ function requireCore () {
 		const file_command_1 = requireFileCommand();
 		const utils_1 = requireUtils$1();
 		const os = __importStar(require$$0);
-		const path = __importStar(require$$1$4);
+		const path = __importStar(require$$0$a);
 		const oidc_utils_1 = requireOidcUtils();
 		/**
 		 * The code to exit an action
@@ -27272,7 +27273,7 @@ function requireTmp () {
 		 */
 		const fs = fs__default;
 		const os = require$$0;
-		const path = require$$1$4;
+		const path = require$$0$a;
 		const crypto = require$$0$1;
 		const _c = { fs: fs.constants, os: os.constants };
 
@@ -42714,86 +42715,1272 @@ class StreamableHTTPClientTransport {
     }
 }
 
+var crossSpawn = {exports: {}};
+
+var windows;
+var hasRequiredWindows;
+
+function requireWindows () {
+	if (hasRequiredWindows) return windows;
+	hasRequiredWindows = 1;
+	windows = isexe;
+	isexe.sync = sync;
+
+	var fs = fs__default;
+
+	function checkPathExt (path, options) {
+	  var pathext = options.pathExt !== undefined ?
+	    options.pathExt : process.env.PATHEXT;
+
+	  if (!pathext) {
+	    return true
+	  }
+
+	  pathext = pathext.split(';');
+	  if (pathext.indexOf('') !== -1) {
+	    return true
+	  }
+	  for (var i = 0; i < pathext.length; i++) {
+	    var p = pathext[i].toLowerCase();
+	    if (p && path.substr(-p.length).toLowerCase() === p) {
+	      return true
+	    }
+	  }
+	  return false
+	}
+
+	function checkStat (stat, path, options) {
+	  if (!stat.isSymbolicLink() && !stat.isFile()) {
+	    return false
+	  }
+	  return checkPathExt(path, options)
+	}
+
+	function isexe (path, options, cb) {
+	  fs.stat(path, function (er, stat) {
+	    cb(er, er ? false : checkStat(stat, path, options));
+	  });
+	}
+
+	function sync (path, options) {
+	  return checkStat(fs.statSync(path), path, options)
+	}
+	return windows;
+}
+
+var mode;
+var hasRequiredMode;
+
+function requireMode () {
+	if (hasRequiredMode) return mode;
+	hasRequiredMode = 1;
+	mode = isexe;
+	isexe.sync = sync;
+
+	var fs = fs__default;
+
+	function isexe (path, options, cb) {
+	  fs.stat(path, function (er, stat) {
+	    cb(er, er ? false : checkStat(stat, options));
+	  });
+	}
+
+	function sync (path, options) {
+	  return checkStat(fs.statSync(path), options)
+	}
+
+	function checkStat (stat, options) {
+	  return stat.isFile() && checkMode(stat, options)
+	}
+
+	function checkMode (stat, options) {
+	  var mod = stat.mode;
+	  var uid = stat.uid;
+	  var gid = stat.gid;
+
+	  var myUid = options.uid !== undefined ?
+	    options.uid : process.getuid && process.getuid();
+	  var myGid = options.gid !== undefined ?
+	    options.gid : process.getgid && process.getgid();
+
+	  var u = parseInt('100', 8);
+	  var g = parseInt('010', 8);
+	  var o = parseInt('001', 8);
+	  var ug = u | g;
+
+	  var ret = (mod & o) ||
+	    (mod & g) && gid === myGid ||
+	    (mod & u) && uid === myUid ||
+	    (mod & ug) && myUid === 0;
+
+	  return ret
+	}
+	return mode;
+}
+
+var isexe_1;
+var hasRequiredIsexe;
+
+function requireIsexe () {
+	if (hasRequiredIsexe) return isexe_1;
+	hasRequiredIsexe = 1;
+	var core;
+	if (process.platform === 'win32' || commonjsGlobal.TESTING_WINDOWS) {
+	  core = requireWindows();
+	} else {
+	  core = requireMode();
+	}
+
+	isexe_1 = isexe;
+	isexe.sync = sync;
+
+	function isexe (path, options, cb) {
+	  if (typeof options === 'function') {
+	    cb = options;
+	    options = {};
+	  }
+
+	  if (!cb) {
+	    if (typeof Promise !== 'function') {
+	      throw new TypeError('callback not provided')
+	    }
+
+	    return new Promise(function (resolve, reject) {
+	      isexe(path, options || {}, function (er, is) {
+	        if (er) {
+	          reject(er);
+	        } else {
+	          resolve(is);
+	        }
+	      });
+	    })
+	  }
+
+	  core(path, options || {}, function (er, is) {
+	    // ignore EACCES because that just means we aren't allowed to run it
+	    if (er) {
+	      if (er.code === 'EACCES' || options && options.ignoreErrors) {
+	        er = null;
+	        is = false;
+	      }
+	    }
+	    cb(er, is);
+	  });
+	}
+
+	function sync (path, options) {
+	  // my kingdom for a filtered catch
+	  try {
+	    return core.sync(path, options || {})
+	  } catch (er) {
+	    if (options && options.ignoreErrors || er.code === 'EACCES') {
+	      return false
+	    } else {
+	      throw er
+	    }
+	  }
+	}
+	return isexe_1;
+}
+
+var which_1;
+var hasRequiredWhich;
+
+function requireWhich () {
+	if (hasRequiredWhich) return which_1;
+	hasRequiredWhich = 1;
+	const isWindows = process.platform === 'win32' ||
+	    process.env.OSTYPE === 'cygwin' ||
+	    process.env.OSTYPE === 'msys';
+
+	const path = require$$0$a;
+	const COLON = isWindows ? ';' : ':';
+	const isexe = requireIsexe();
+
+	const getNotFoundError = (cmd) =>
+	  Object.assign(new Error(`not found: ${cmd}`), { code: 'ENOENT' });
+
+	const getPathInfo = (cmd, opt) => {
+	  const colon = opt.colon || COLON;
+
+	  // If it has a slash, then we don't bother searching the pathenv.
+	  // just check the file itself, and that's it.
+	  const pathEnv = cmd.match(/\//) || isWindows && cmd.match(/\\/) ? ['']
+	    : (
+	      [
+	        // windows always checks the cwd first
+	        ...(isWindows ? [process.cwd()] : []),
+	        ...(opt.path || process.env.PATH ||
+	          /* istanbul ignore next: very unusual */ '').split(colon),
+	      ]
+	    );
+	  const pathExtExe = isWindows
+	    ? opt.pathExt || process.env.PATHEXT || '.EXE;.CMD;.BAT;.COM'
+	    : '';
+	  const pathExt = isWindows ? pathExtExe.split(colon) : [''];
+
+	  if (isWindows) {
+	    if (cmd.indexOf('.') !== -1 && pathExt[0] !== '')
+	      pathExt.unshift('');
+	  }
+
+	  return {
+	    pathEnv,
+	    pathExt,
+	    pathExtExe,
+	  }
+	};
+
+	const which = (cmd, opt, cb) => {
+	  if (typeof opt === 'function') {
+	    cb = opt;
+	    opt = {};
+	  }
+	  if (!opt)
+	    opt = {};
+
+	  const { pathEnv, pathExt, pathExtExe } = getPathInfo(cmd, opt);
+	  const found = [];
+
+	  const step = i => new Promise((resolve, reject) => {
+	    if (i === pathEnv.length)
+	      return opt.all && found.length ? resolve(found)
+	        : reject(getNotFoundError(cmd))
+
+	    const ppRaw = pathEnv[i];
+	    const pathPart = /^".*"$/.test(ppRaw) ? ppRaw.slice(1, -1) : ppRaw;
+
+	    const pCmd = path.join(pathPart, cmd);
+	    const p = !pathPart && /^\.[\\\/]/.test(cmd) ? cmd.slice(0, 2) + pCmd
+	      : pCmd;
+
+	    resolve(subStep(p, i, 0));
+	  });
+
+	  const subStep = (p, i, ii) => new Promise((resolve, reject) => {
+	    if (ii === pathExt.length)
+	      return resolve(step(i + 1))
+	    const ext = pathExt[ii];
+	    isexe(p + ext, { pathExt: pathExtExe }, (er, is) => {
+	      if (!er && is) {
+	        if (opt.all)
+	          found.push(p + ext);
+	        else
+	          return resolve(p + ext)
+	      }
+	      return resolve(subStep(p, i, ii + 1))
+	    });
+	  });
+
+	  return cb ? step(0).then(res => cb(null, res), cb) : step(0)
+	};
+
+	const whichSync = (cmd, opt) => {
+	  opt = opt || {};
+
+	  const { pathEnv, pathExt, pathExtExe } = getPathInfo(cmd, opt);
+	  const found = [];
+
+	  for (let i = 0; i < pathEnv.length; i ++) {
+	    const ppRaw = pathEnv[i];
+	    const pathPart = /^".*"$/.test(ppRaw) ? ppRaw.slice(1, -1) : ppRaw;
+
+	    const pCmd = path.join(pathPart, cmd);
+	    const p = !pathPart && /^\.[\\\/]/.test(cmd) ? cmd.slice(0, 2) + pCmd
+	      : pCmd;
+
+	    for (let j = 0; j < pathExt.length; j ++) {
+	      const cur = p + pathExt[j];
+	      try {
+	        const is = isexe.sync(cur, { pathExt: pathExtExe });
+	        if (is) {
+	          if (opt.all)
+	            found.push(cur);
+	          else
+	            return cur
+	        }
+	      } catch (ex) {}
+	    }
+	  }
+
+	  if (opt.all && found.length)
+	    return found
+
+	  if (opt.nothrow)
+	    return null
+
+	  throw getNotFoundError(cmd)
+	};
+
+	which_1 = which;
+	which.sync = whichSync;
+	return which_1;
+}
+
+var pathKey = {exports: {}};
+
+var hasRequiredPathKey;
+
+function requirePathKey () {
+	if (hasRequiredPathKey) return pathKey.exports;
+	hasRequiredPathKey = 1;
+
+	const pathKey$1 = (options = {}) => {
+		const environment = options.env || process.env;
+		const platform = options.platform || process.platform;
+
+		if (platform !== 'win32') {
+			return 'PATH';
+		}
+
+		return Object.keys(environment).reverse().find(key => key.toUpperCase() === 'PATH') || 'Path';
+	};
+
+	pathKey.exports = pathKey$1;
+	// TODO: Remove this for the next major release
+	pathKey.exports.default = pathKey$1;
+	return pathKey.exports;
+}
+
+var resolveCommand_1;
+var hasRequiredResolveCommand;
+
+function requireResolveCommand () {
+	if (hasRequiredResolveCommand) return resolveCommand_1;
+	hasRequiredResolveCommand = 1;
+
+	const path = require$$0$a;
+	const which = requireWhich();
+	const getPathKey = requirePathKey();
+
+	function resolveCommandAttempt(parsed, withoutPathExt) {
+	    const env = parsed.options.env || process.env;
+	    const cwd = process.cwd();
+	    const hasCustomCwd = parsed.options.cwd != null;
+	    // Worker threads do not have process.chdir()
+	    const shouldSwitchCwd = hasCustomCwd && process.chdir !== undefined && !process.chdir.disabled;
+
+	    // If a custom `cwd` was specified, we need to change the process cwd
+	    // because `which` will do stat calls but does not support a custom cwd
+	    if (shouldSwitchCwd) {
+	        try {
+	            process.chdir(parsed.options.cwd);
+	        } catch (err) {
+	            /* Empty */
+	        }
+	    }
+
+	    let resolved;
+
+	    try {
+	        resolved = which.sync(parsed.command, {
+	            path: env[getPathKey({ env })],
+	            pathExt: withoutPathExt ? path.delimiter : undefined,
+	        });
+	    } catch (e) {
+	        /* Empty */
+	    } finally {
+	        if (shouldSwitchCwd) {
+	            process.chdir(cwd);
+	        }
+	    }
+
+	    // If we successfully resolved, ensure that an absolute path is returned
+	    // Note that when a custom `cwd` was used, we need to resolve to an absolute path based on it
+	    if (resolved) {
+	        resolved = path.resolve(hasCustomCwd ? parsed.options.cwd : '', resolved);
+	    }
+
+	    return resolved;
+	}
+
+	function resolveCommand(parsed) {
+	    return resolveCommandAttempt(parsed) || resolveCommandAttempt(parsed, true);
+	}
+
+	resolveCommand_1 = resolveCommand;
+	return resolveCommand_1;
+}
+
+var _escape = {};
+
+var hasRequired_escape;
+
+function require_escape () {
+	if (hasRequired_escape) return _escape;
+	hasRequired_escape = 1;
+
+	// See http://www.robvanderwoude.com/escapechars.php
+	const metaCharsRegExp = /([()\][%!^"`<>&|;, *?])/g;
+
+	function escapeCommand(arg) {
+	    // Escape meta chars
+	    arg = arg.replace(metaCharsRegExp, '^$1');
+
+	    return arg;
+	}
+
+	function escapeArgument(arg, doubleEscapeMetaChars) {
+	    // Convert to string
+	    arg = `${arg}`;
+
+	    // Algorithm below is based on https://qntm.org/cmd
+	    // It's slightly altered to disable JS backtracking to avoid hanging on specially crafted input
+	    // Please see https://github.com/moxystudio/node-cross-spawn/pull/160 for more information
+
+	    // Sequence of backslashes followed by a double quote:
+	    // double up all the backslashes and escape the double quote
+	    arg = arg.replace(/(?=(\\+?)?)\1"/g, '$1$1\\"');
+
+	    // Sequence of backslashes followed by the end of the string
+	    // (which will become a double quote later):
+	    // double up all the backslashes
+	    arg = arg.replace(/(?=(\\+?)?)\1$/, '$1$1');
+
+	    // All other backslashes occur literally
+
+	    // Quote the whole thing:
+	    arg = `"${arg}"`;
+
+	    // Escape meta chars
+	    arg = arg.replace(metaCharsRegExp, '^$1');
+
+	    // Double escape meta chars if necessary
+	    if (doubleEscapeMetaChars) {
+	        arg = arg.replace(metaCharsRegExp, '^$1');
+	    }
+
+	    return arg;
+	}
+
+	_escape.command = escapeCommand;
+	_escape.argument = escapeArgument;
+	return _escape;
+}
+
+var shebangRegex;
+var hasRequiredShebangRegex;
+
+function requireShebangRegex () {
+	if (hasRequiredShebangRegex) return shebangRegex;
+	hasRequiredShebangRegex = 1;
+	shebangRegex = /^#!(.*)/;
+	return shebangRegex;
+}
+
+var shebangCommand;
+var hasRequiredShebangCommand;
+
+function requireShebangCommand () {
+	if (hasRequiredShebangCommand) return shebangCommand;
+	hasRequiredShebangCommand = 1;
+	const shebangRegex = requireShebangRegex();
+
+	shebangCommand = (string = '') => {
+		const match = string.match(shebangRegex);
+
+		if (!match) {
+			return null;
+		}
+
+		const [path, argument] = match[0].replace(/#! ?/, '').split(' ');
+		const binary = path.split('/').pop();
+
+		if (binary === 'env') {
+			return argument;
+		}
+
+		return argument ? `${binary} ${argument}` : binary;
+	};
+	return shebangCommand;
+}
+
+var readShebang_1;
+var hasRequiredReadShebang;
+
+function requireReadShebang () {
+	if (hasRequiredReadShebang) return readShebang_1;
+	hasRequiredReadShebang = 1;
+
+	const fs = fs__default;
+	const shebangCommand = requireShebangCommand();
+
+	function readShebang(command) {
+	    // Read the first 150 bytes from the file
+	    const size = 150;
+	    const buffer = Buffer.alloc(size);
+
+	    let fd;
+
+	    try {
+	        fd = fs.openSync(command, 'r');
+	        fs.readSync(fd, buffer, 0, size, 0);
+	        fs.closeSync(fd);
+	    } catch (e) { /* Empty */ }
+
+	    // Attempt to extract shebang (null is returned if not a shebang)
+	    return shebangCommand(buffer.toString());
+	}
+
+	readShebang_1 = readShebang;
+	return readShebang_1;
+}
+
+var parse_1;
+var hasRequiredParse;
+
+function requireParse () {
+	if (hasRequiredParse) return parse_1;
+	hasRequiredParse = 1;
+
+	const path = require$$0$a;
+	const resolveCommand = requireResolveCommand();
+	const escape = require_escape();
+	const readShebang = requireReadShebang();
+
+	const isWin = process.platform === 'win32';
+	const isExecutableRegExp = /\.(?:com|exe)$/i;
+	const isCmdShimRegExp = /node_modules[\\/].bin[\\/][^\\/]+\.cmd$/i;
+
+	function detectShebang(parsed) {
+	    parsed.file = resolveCommand(parsed);
+
+	    const shebang = parsed.file && readShebang(parsed.file);
+
+	    if (shebang) {
+	        parsed.args.unshift(parsed.file);
+	        parsed.command = shebang;
+
+	        return resolveCommand(parsed);
+	    }
+
+	    return parsed.file;
+	}
+
+	function parseNonShell(parsed) {
+	    if (!isWin) {
+	        return parsed;
+	    }
+
+	    // Detect & add support for shebangs
+	    const commandFile = detectShebang(parsed);
+
+	    // We don't need a shell if the command filename is an executable
+	    const needsShell = !isExecutableRegExp.test(commandFile);
+
+	    // If a shell is required, use cmd.exe and take care of escaping everything correctly
+	    // Note that `forceShell` is an hidden option used only in tests
+	    if (parsed.options.forceShell || needsShell) {
+	        // Need to double escape meta chars if the command is a cmd-shim located in `node_modules/.bin/`
+	        // The cmd-shim simply calls execute the package bin file with NodeJS, proxying any argument
+	        // Because the escape of metachars with ^ gets interpreted when the cmd.exe is first called,
+	        // we need to double escape them
+	        const needsDoubleEscapeMetaChars = isCmdShimRegExp.test(commandFile);
+
+	        // Normalize posix paths into OS compatible paths (e.g.: foo/bar -> foo\bar)
+	        // This is necessary otherwise it will always fail with ENOENT in those cases
+	        parsed.command = path.normalize(parsed.command);
+
+	        // Escape command & arguments
+	        parsed.command = escape.command(parsed.command);
+	        parsed.args = parsed.args.map((arg) => escape.argument(arg, needsDoubleEscapeMetaChars));
+
+	        const shellCommand = [parsed.command].concat(parsed.args).join(' ');
+
+	        parsed.args = ['/d', '/s', '/c', `"${shellCommand}"`];
+	        parsed.command = process.env.comspec || 'cmd.exe';
+	        parsed.options.windowsVerbatimArguments = true; // Tell node's spawn that the arguments are already escaped
+	    }
+
+	    return parsed;
+	}
+
+	function parse(command, args, options) {
+	    // Normalize arguments, similar to nodejs
+	    if (args && !Array.isArray(args)) {
+	        options = args;
+	        args = null;
+	    }
+
+	    args = args ? args.slice(0) : []; // Clone array to avoid changing the original
+	    options = Object.assign({}, options); // Clone object to avoid changing the original
+
+	    // Build our parsed object
+	    const parsed = {
+	        command,
+	        args,
+	        options,
+	        file: undefined,
+	        original: {
+	            command,
+	            args,
+	        },
+	    };
+
+	    // Delegate further parsing to shell or non-shell
+	    return options.shell ? parsed : parseNonShell(parsed);
+	}
+
+	parse_1 = parse;
+	return parse_1;
+}
+
+var enoent;
+var hasRequiredEnoent;
+
+function requireEnoent () {
+	if (hasRequiredEnoent) return enoent;
+	hasRequiredEnoent = 1;
+
+	const isWin = process.platform === 'win32';
+
+	function notFoundError(original, syscall) {
+	    return Object.assign(new Error(`${syscall} ${original.command} ENOENT`), {
+	        code: 'ENOENT',
+	        errno: 'ENOENT',
+	        syscall: `${syscall} ${original.command}`,
+	        path: original.command,
+	        spawnargs: original.args,
+	    });
+	}
+
+	function hookChildProcess(cp, parsed) {
+	    if (!isWin) {
+	        return;
+	    }
+
+	    const originalEmit = cp.emit;
+
+	    cp.emit = function (name, arg1) {
+	        // If emitting "exit" event and exit code is 1, we need to check if
+	        // the command exists and emit an "error" instead
+	        // See https://github.com/IndigoUnited/node-cross-spawn/issues/16
+	        if (name === 'exit') {
+	            const err = verifyENOENT(arg1, parsed);
+
+	            if (err) {
+	                return originalEmit.call(cp, 'error', err);
+	            }
+	        }
+
+	        return originalEmit.apply(cp, arguments); // eslint-disable-line prefer-rest-params
+	    };
+	}
+
+	function verifyENOENT(status, parsed) {
+	    if (isWin && status === 1 && !parsed.file) {
+	        return notFoundError(parsed.original, 'spawn');
+	    }
+
+	    return null;
+	}
+
+	function verifyENOENTSync(status, parsed) {
+	    if (isWin && status === 1 && !parsed.file) {
+	        return notFoundError(parsed.original, 'spawnSync');
+	    }
+
+	    return null;
+	}
+
+	enoent = {
+	    hookChildProcess,
+	    verifyENOENT,
+	    verifyENOENTSync,
+	    notFoundError,
+	};
+	return enoent;
+}
+
+var hasRequiredCrossSpawn;
+
+function requireCrossSpawn () {
+	if (hasRequiredCrossSpawn) return crossSpawn.exports;
+	hasRequiredCrossSpawn = 1;
+
+	const cp = require$$2$2;
+	const parse = requireParse();
+	const enoent = requireEnoent();
+
+	function spawn(command, args, options) {
+	    // Parse the arguments
+	    const parsed = parse(command, args, options);
+
+	    // Spawn the child process
+	    const spawned = cp.spawn(parsed.command, parsed.args, parsed.options);
+
+	    // Hook into child process "exit" event to emit an error if the command
+	    // does not exists, see: https://github.com/IndigoUnited/node-cross-spawn/issues/16
+	    enoent.hookChildProcess(spawned, parsed);
+
+	    return spawned;
+	}
+
+	function spawnSync(command, args, options) {
+	    // Parse the arguments
+	    const parsed = parse(command, args, options);
+
+	    // Spawn the child process
+	    const result = cp.spawnSync(parsed.command, parsed.args, parsed.options);
+
+	    // Analyze if the command does not exist, see: https://github.com/IndigoUnited/node-cross-spawn/issues/16
+	    result.error = result.error || enoent.verifyENOENTSync(result.status, parsed);
+
+	    return result;
+	}
+
+	crossSpawn.exports = spawn;
+	crossSpawn.exports.spawn = spawn;
+	crossSpawn.exports.sync = spawnSync;
+
+	crossSpawn.exports._parse = parse;
+	crossSpawn.exports._enoent = enoent;
+	return crossSpawn.exports;
+}
+
+var crossSpawnExports = requireCrossSpawn();
+var spawn = /*@__PURE__*/getDefaultExportFromCjs(crossSpawnExports);
+
 /**
- * Connect to the GitHub MCP server and retrieve available tools
+ * Buffers a continuous stdio stream into discrete JSON-RPC messages.
  */
-async function connectToGitHubMCP(token) {
-    const githubMcpUrl = 'https://api.githubcopilot.com/mcp/';
-    coreExports.info('Connecting to GitHub MCP server...');
-    const transport = new StreamableHTTPClientTransport(new URL(githubMcpUrl), {
-        requestInit: {
+class ReadBuffer {
+    append(chunk) {
+        this._buffer = this._buffer ? Buffer.concat([this._buffer, chunk]) : chunk;
+    }
+    readMessage() {
+        if (!this._buffer) {
+            return null;
+        }
+        const index = this._buffer.indexOf("\n");
+        if (index === -1) {
+            return null;
+        }
+        const line = this._buffer.toString("utf8", 0, index).replace(/\r$/, '');
+        this._buffer = this._buffer.subarray(index + 1);
+        return deserializeMessage(line);
+    }
+    clear() {
+        this._buffer = undefined;
+    }
+}
+function deserializeMessage(line) {
+    return JSONRPCMessageSchema.parse(JSON.parse(line));
+}
+function serializeMessage(message) {
+    return JSON.stringify(message) + "\n";
+}
+
+/**
+ * Environment variables to inherit by default, if an environment is not explicitly given.
+ */
+const DEFAULT_INHERITED_ENV_VARS = process$1.platform === "win32"
+    ? [
+        "APPDATA",
+        "HOMEDRIVE",
+        "HOMEPATH",
+        "LOCALAPPDATA",
+        "PATH",
+        "PROCESSOR_ARCHITECTURE",
+        "SYSTEMDRIVE",
+        "SYSTEMROOT",
+        "TEMP",
+        "USERNAME",
+        "USERPROFILE",
+        "PROGRAMFILES",
+    ]
+    : /* list inspired by the default env inheritance of sudo */
+        ["HOME", "LOGNAME", "PATH", "SHELL", "TERM", "USER"];
+/**
+ * Returns a default environment object including only environment variables deemed safe to inherit.
+ */
+function getDefaultEnvironment() {
+    const env = {};
+    for (const key of DEFAULT_INHERITED_ENV_VARS) {
+        const value = process$1.env[key];
+        if (value === undefined) {
+            continue;
+        }
+        if (value.startsWith("()")) {
+            // Skip functions, which are a security risk.
+            continue;
+        }
+        env[key] = value;
+    }
+    return env;
+}
+/**
+ * Client transport for stdio: this will connect to a server by spawning a process and communicating with it over stdin/stdout.
+ *
+ * This transport is only available in Node.js environments.
+ */
+class StdioClientTransport {
+    constructor(server) {
+        this._abortController = new AbortController();
+        this._readBuffer = new ReadBuffer();
+        this._stderrStream = null;
+        this._serverParams = server;
+        if (server.stderr === "pipe" || server.stderr === "overlapped") {
+            this._stderrStream = new PassThrough();
+        }
+    }
+    /**
+     * Starts the server process and prepares to communicate with it.
+     */
+    async start() {
+        if (this._process) {
+            throw new Error("StdioClientTransport already started! If using Client class, note that connect() calls start() automatically.");
+        }
+        return new Promise((resolve, reject) => {
+            var _a, _b, _c, _d, _e;
+            this._process = spawn(this._serverParams.command, (_a = this._serverParams.args) !== null && _a !== void 0 ? _a : [], {
+                // merge default env with server env because mcp server needs some env vars
+                env: {
+                    ...getDefaultEnvironment(),
+                    ...this._serverParams.env,
+                },
+                stdio: ["pipe", "pipe", (_b = this._serverParams.stderr) !== null && _b !== void 0 ? _b : "inherit"],
+                shell: false,
+                signal: this._abortController.signal,
+                windowsHide: process$1.platform === "win32" && isElectron(),
+                cwd: this._serverParams.cwd,
+            });
+            this._process.on("error", (error) => {
+                var _a, _b;
+                if (error.name === "AbortError") {
+                    // Expected when close() is called.
+                    (_a = this.onclose) === null || _a === void 0 ? void 0 : _a.call(this);
+                    return;
+                }
+                reject(error);
+                (_b = this.onerror) === null || _b === void 0 ? void 0 : _b.call(this, error);
+            });
+            this._process.on("spawn", () => {
+                resolve();
+            });
+            this._process.on("close", (_code) => {
+                var _a;
+                this._process = undefined;
+                (_a = this.onclose) === null || _a === void 0 ? void 0 : _a.call(this);
+            });
+            (_c = this._process.stdin) === null || _c === void 0 ? void 0 : _c.on("error", (error) => {
+                var _a;
+                (_a = this.onerror) === null || _a === void 0 ? void 0 : _a.call(this, error);
+            });
+            (_d = this._process.stdout) === null || _d === void 0 ? void 0 : _d.on("data", (chunk) => {
+                this._readBuffer.append(chunk);
+                this.processReadBuffer();
+            });
+            (_e = this._process.stdout) === null || _e === void 0 ? void 0 : _e.on("error", (error) => {
+                var _a;
+                (_a = this.onerror) === null || _a === void 0 ? void 0 : _a.call(this, error);
+            });
+            if (this._stderrStream && this._process.stderr) {
+                this._process.stderr.pipe(this._stderrStream);
+            }
+        });
+    }
+    /**
+     * The stderr stream of the child process, if `StdioServerParameters.stderr` was set to "pipe" or "overlapped".
+     *
+     * If stderr piping was requested, a PassThrough stream is returned _immediately_, allowing callers to
+     * attach listeners before the start method is invoked. This prevents loss of any early
+     * error output emitted by the child process.
+     */
+    get stderr() {
+        var _a, _b;
+        if (this._stderrStream) {
+            return this._stderrStream;
+        }
+        return (_b = (_a = this._process) === null || _a === void 0 ? void 0 : _a.stderr) !== null && _b !== void 0 ? _b : null;
+    }
+    /**
+     * The child process pid spawned by this transport.
+     *
+     * This is only available after the transport has been started.
+     */
+    get pid() {
+        var _a, _b;
+        return (_b = (_a = this._process) === null || _a === void 0 ? void 0 : _a.pid) !== null && _b !== void 0 ? _b : null;
+    }
+    processReadBuffer() {
+        var _a, _b;
+        while (true) {
+            try {
+                const message = this._readBuffer.readMessage();
+                if (message === null) {
+                    break;
+                }
+                (_a = this.onmessage) === null || _a === void 0 ? void 0 : _a.call(this, message);
+            }
+            catch (error) {
+                (_b = this.onerror) === null || _b === void 0 ? void 0 : _b.call(this, error);
+            }
+        }
+    }
+    async close() {
+        this._abortController.abort();
+        this._process = undefined;
+        this._readBuffer.clear();
+    }
+    send(message) {
+        return new Promise((resolve) => {
+            var _a;
+            if (!((_a = this._process) === null || _a === void 0 ? void 0 : _a.stdin)) {
+                throw new Error("Not connected");
+            }
+            const json = serializeMessage(message);
+            if (this._process.stdin.write(json)) {
+                resolve();
+            }
+            else {
+                this._process.stdin.once("drain", resolve);
+            }
+        });
+    }
+}
+function isElectron() {
+    return "type" in process$1;
+}
+
+/**
+ * Abstract factory for creating MCP server configurations
+ */
+class MCPServerFactory {
+    validateCredentials(credentials, requiredFields) {
+        for (const field of requiredFields) {
+            if (!credentials[field]) {
+                throw new Error(`${this.getName()} requires ${field}`);
+            }
+        }
+    }
+}
+/**
+ * Registry for managing MCP server factories
+ */
+class MCPServerRegistry {
+    factories = new Map();
+    register(factory) {
+        this.factories.set(factory.getId(), factory);
+    }
+    getFactory(serverId) {
+        return this.factories.get(serverId);
+    }
+    getAllFactories() {
+        return Array.from(this.factories.values());
+    }
+    /**
+     * Create server configurations with detailed availability reporting
+     */
+    createConfigsWithAvailability(credentialsMap) {
+        const available = [];
+        const unavailable = [];
+        for (const factory of this.getAllFactories()) {
+            const serverId = factory.getId();
+            const serverName = factory.getName();
+            let credentials = credentialsMap.get(serverId);
+            if (!credentials) {
+                // Check if this server requires credentials by testing with empty credentials
+                if (factory.isCredentialsValid({})) {
+                    // Server doesn't require credentials, use empty credentials
+                    credentials = {};
+                }
+                else {
+                    unavailable.push({
+                        serverId,
+                        serverName,
+                        status: 'credentials-missing',
+                        reason: `No credentials provided for ${serverName}`,
+                        lastChecked: new Date(),
+                    });
+                    continue;
+                }
+            }
+            if (!factory.isCredentialsValid(credentials)) {
+                unavailable.push({
+                    serverId,
+                    serverName,
+                    status: 'invalid-credentials',
+                    reason: `Invalid credentials for ${serverName}`,
+                    lastChecked: new Date(),
+                });
+                continue;
+            }
+            try {
+                const config = factory.createServerConfig(credentials);
+                available.push(config);
+                coreExports.info(`✅ ${serverName} server available`);
+            }
+            catch (error) {
+                unavailable.push({
+                    serverId,
+                    serverName,
+                    status: 'connection-failed',
+                    reason: `Failed to create config: ${error}`,
+                    lastChecked: new Date(),
+                });
+                coreExports.warning(`❌ Failed to configure ${serverName}: ${error}`);
+            }
+        }
+        // Sort available configs by priority
+        available.sort((a, b) => (a.priority || 999) - (b.priority || 999));
+        // Log summary
+        const summary = {
+            total: this.getAllFactories().length,
+            available: available.length,
+            unavailable: unavailable.length,
+        };
+        if (unavailable.length > 0) {
+            coreExports.info(`📊 Server availability: ${summary.available}/${summary.total} servers available. ` +
+                `Unavailable: ${unavailable.map(u => u.serverId).join(', ')}`);
+        }
+        else {
+            coreExports.info(`🎉 All ${summary.total} servers are available`);
+        }
+        return { available, unavailable, summary };
+    }
+    /**
+     * Legacy method for backward compatibility
+     * (Now wraps the enhanced method)
+     */
+    createConfigs(credentialsMap) {
+        const result = this.createConfigsWithAvailability(credentialsMap);
+        return result.available;
+    }
+    /**
+     * Get list of servers that require credentials
+     */
+    getRequiredCredentials() {
+        const requirements = new Map();
+        for (const factory of this.getAllFactories()) {
+            // This is a simple heuristic - in a real implementation,
+            // factories could expose their required credential fields
+            const serverId = factory.getId();
+            // Test with empty credentials to see what's required
+            try {
+                factory.createServerConfig({});
+            }
+            catch (error) {
+                // Parse error message to extract required fields
+                const errorMessage = error instanceof Error ? error.message : String(error);
+                if (errorMessage.includes('requires')) {
+                    // Extract field name from error like "GitHub MCP requires token"
+                    const match = errorMessage.match(/requires (\w+)/);
+                    if (match) {
+                        requirements.set(serverId, [match[1]]);
+                    }
+                }
+            }
+        }
+        return requirements;
+    }
+    /**
+     * Check if sufficient servers are available for basic operation
+     */
+    hasMinimumServers(result, minRequired = 1) {
+        return result.available.length >= minRequired;
+    }
+}
+
+/**
+ * GitHub MCP Server Factory
+ */
+class GitHubMCPFactory extends MCPServerFactory {
+    getId() {
+        return 'github';
+    }
+    getName() {
+        return 'GitHub MCP';
+    }
+    isCredentialsValid(credentials) {
+        return !!credentials.token;
+    }
+    createServerConfig(credentials) {
+        this.validateCredentials(credentials, ['token']);
+        return {
+            id: 'github',
+            name: 'GitHub MCP',
+            type: 'http',
+            url: 'https://api.githubcopilot.com/mcp/',
             headers: {
-                Authorization: `Bearer ${token}`,
+                Authorization: `Bearer ${credentials.token}`,
                 'X-MCP-Readonly': 'true',
             },
-        },
-    });
-    const client = new Client({
-        name: 'ai-inference-action',
-        version: '1.0.0',
-        transport,
-    });
+            readonly: true,
+            priority: 1,
+        };
+    }
+}
+
+/**
+ * Sentry MCP Server Factory
+ */
+class SentryMCPFactory extends MCPServerFactory {
+    getId() {
+        return 'sentry';
+    }
+    getName() {
+        return 'Sentry MCP';
+    }
+    isCredentialsValid(credentials) {
+        return !!credentials.token;
+    }
+    createServerConfig(credentials) {
+        this.validateCredentials(credentials, ['token']);
+        return {
+            id: 'sentry',
+            name: 'Sentry MCP',
+            type: 'stdio',
+            command: 'npx',
+            args: ['-y', '--no-update-notifier', '@sentry/mcp-server@latest', '--host=github.sentry.io'],
+            env: {
+                SENTRY_ACCESS_TOKEN: credentials.token,
+                SENTRY_HOST: 'github.sentry.io',
+                NO_UPDATE_NOTIFIER: '1',
+                NPM_CONFIG_UPDATE_NOTIFIER: 'false',
+            },
+            priority: 2,
+        };
+    }
+}
+
+/**
+ * Datadog MCP Server Factory
+ */
+class DatadogMCPFactory extends MCPServerFactory {
+    getId() {
+        return 'datadog';
+    }
+    getName() {
+        return 'Datadog MCP';
+    }
+    isCredentialsValid(credentials) {
+        return !!credentials.apiKey && !!credentials.appKey;
+    }
+    createServerConfig(credentials) {
+        this.validateCredentials(credentials, ['apiKey', 'appKey']);
+        return {
+            id: 'datadog',
+            name: 'Datadog MCP',
+            type: 'http',
+            url: 'https://mcp.datadoghq.com/api/unstable/mcp-server/mcp',
+            headers: {
+                DD_API_KEY: credentials.apiKey,
+                DD_APPLICATION_KEY: credentials.appKey,
+            },
+            priority: 3,
+        };
+    }
+}
+
+/**
+ * Azure MCP Server Factory
+ */
+class AzureMCPFactory extends MCPServerFactory {
+    getId() {
+        return 'azure';
+    }
+    getName() {
+        return 'Azure MCP';
+    }
+    isCredentialsValid(credentials) {
+        // Azure MCP requires Service Principal authentication
+        return !!(credentials.clientId && credentials.clientSecret && credentials.tenantId);
+    }
+    createServerConfig(credentials) {
+        if (!this.isCredentialsValid(credentials)) {
+            throw new Error('Azure MCP requires clientId, clientSecret, and tenantId');
+        }
+        return {
+            id: 'azure',
+            name: 'Azure MCP',
+            type: 'stdio',
+            command: 'npx',
+            args: ['-y', '--no-update-notifier', '@azure/mcp@latest', 'server', 'start'],
+            env: {
+                AZURE_CLIENT_ID: credentials.clientId,
+                AZURE_CLIENT_SECRET: credentials.clientSecret,
+                AZURE_TENANT_ID: credentials.tenantId,
+                NO_UPDATE_NOTIFIER: '1',
+                NPM_CONFIG_UPDATE_NOTIFIER: 'false',
+            },
+            priority: 4,
+        };
+    }
+}
+
+/**
+ * Generic function to connect to any MCP server based on configuration
+ */
+async function connectToMCPServer(config) {
+    coreExports.info(`Connecting to ${config.name} server...`);
+    let transport;
     try {
+        // Create transport based on server type
+        if (config.type === 'http') {
+            if (!config.url) {
+                throw new Error(`HTTP server ${config.name} requires URL`);
+            }
+            transport = new StreamableHTTPClientTransport(new URL(config.url), {
+                requestInit: {
+                    headers: config.headers || {},
+                },
+            });
+        }
+        else if (config.type === 'stdio') {
+            if (!config.command || !config.args) {
+                throw new Error(`Stdio server ${config.name} requires command and args`);
+            }
+            // Filter out undefined values from environment
+            const envVars = {};
+            if (config.env) {
+                for (const [key, value] of Object.entries(config.env)) {
+                    if (value !== undefined) {
+                        envVars[key] = value;
+                    }
+                }
+            }
+            transport = new StdioClientTransport({
+                command: config.command,
+                args: config.args,
+                env: {
+                    ...envVars,
+                },
+            });
+        }
+        else {
+            throw new Error(`Unsupported transport type: ${config.type}`);
+        }
+        const client = new Client({
+            name: 'ai-inference-action',
+            version: '1.0.0',
+            transport,
+        });
         await client.connect(transport);
+        coreExports.info(`Successfully connected to ${config.name} server`);
+        const toolsResponse = await client.listTools();
+        coreExports.info(`Retrieved ${toolsResponse.tools?.length || 0} tools from ${config.name} server`);
+        // Map MCP tools → Azure AI Inference tool definitions
+        const tools = (toolsResponse.tools || []).map(t => ({
+            type: 'function',
+            function: {
+                name: t.name,
+                description: t.description,
+                parameters: t.inputSchema,
+            },
+        }));
+        coreExports.info(`Mapped ${tools.length} tools from ${config.name} for Azure AI Inference`);
+        return {
+            config,
+            client,
+            tools,
+            connected: true,
+        };
     }
     catch (mcpError) {
-        coreExports.warning(`Failed to connect to GitHub MCP server: ${mcpError}`);
+        coreExports.warning(`Failed to connect to ${config.name} server: ${mcpError}`);
         return null;
     }
-    coreExports.info('Successfully connected to GitHub MCP server');
-    const toolsResponse = await client.listTools();
-    coreExports.info(`Retrieved ${toolsResponse.tools?.length || 0} tools from GitHub MCP server`);
-    // Map GitHub MCP tools → Azure AI Inference tool definitions
-    const tools = (toolsResponse.tools || []).map(t => ({
-        type: 'function',
-        function: {
-            name: t.name,
-            description: t.description,
-            parameters: t.inputSchema,
-        },
-    }));
-    coreExports.info(`Mapped ${tools.length} GitHub MCP tools for Azure AI Inference`);
-    return { client, tools };
-}
-/**
- * Execute a single tool call via GitHub MCP
- */
-async function executeToolCall(githubMcpClient, toolCall) {
-    coreExports.info(`Executing GitHub MCP tool: ${toolCall.function.name} with args: ${toolCall.function.arguments}`);
-    try {
-        const args = JSON.parse(toolCall.function.arguments);
-        const result = await githubMcpClient.callTool({
-            name: toolCall.function.name,
-            arguments: args,
-        });
-        coreExports.info(`GitHub MCP tool ${toolCall.function.name} executed successfully`);
-        return {
-            tool_call_id: toolCall.id,
-            role: 'tool',
-            name: toolCall.function.name,
-            content: JSON.stringify(result.content),
-        };
-    }
-    catch (toolError) {
-        coreExports.warning(`Failed to execute GitHub MCP tool ${toolCall.function.name}: ${toolError}`);
-        return {
-            tool_call_id: toolCall.id,
-            role: 'tool',
-            name: toolCall.function.name,
-            content: `Error: ${toolError}`,
-        };
-    }
-}
-/**
- * Execute all tool calls from a response via GitHub MCP
- */
-async function executeToolCalls(githubMcpClient, toolCalls) {
-    const toolResults = [];
-    for (const toolCall of toolCalls) {
-        const result = await executeToolCall(githubMcpClient, toolCall);
-        toolResults.push(result);
-    }
-    return toolResults;
 }
 
 function __classPrivateFieldSet(receiver, state, value, kind, f) {
@@ -49508,20 +50695,37 @@ async function simpleInference(request) {
     return modelResponse || null;
 }
 /**
- * GitHub MCP-enabled inference with tool execution loop
+ * Multi-server MCP-enabled inference with tool execution loop
  */
-async function mcpInference(request, githubMcpClient) {
-    coreExports.info('Running GitHub MCP inference with tools');
+async function multiMcpInference(request, mcpClients) {
+    coreExports.info(`Running multi-server MCP inference with ${mcpClients.length} connected servers`);
+    if (mcpClients.length === 0) {
+        coreExports.warning('No MCP clients provided, falling back to simple inference');
+        return simpleInference(request);
+    }
     const client = new OpenAI({
         apiKey: request.token,
         baseURL: request.endpoint,
     });
+    // Aggregate all tools from all servers with server identification
+    const allTools = mcpClients.flatMap(mcpClient => mcpClient.tools.map(tool => ({
+        ...tool,
+        // Add metadata to track which server owns this tool
+        serverId: mcpClient.config.id,
+        serverName: mcpClient.config.name,
+    })));
+    // Create tool-to-server mapping for routing tool calls
+    const toolToServer = new Map();
+    mcpClients.forEach(mcpClient => {
+        mcpClient.tools.forEach(tool => {
+            toolToServer.set(tool.function.name, mcpClient);
+        });
+    });
+    coreExports.info(`Aggregated ${allTools.length} tools from ${mcpClients.length} servers`);
     // Start with the pre-processed messages
     const messages = [...request.messages];
     let iterationCount = 0;
     const maxIterations = 5; // Prevent infinite loops
-    // We want to use response_format (e.g. JSON) on the last iteration only, so the model can output
-    // the final result in the expected format without interfering with tool calls
     let finalMessage = false;
     while (iterationCount < maxIterations) {
         iterationCount++;
@@ -49537,10 +50741,11 @@ async function mcpInference(request, githubMcpClient) {
             chatCompletionRequest.response_format = request.responseFormat;
         }
         else {
-            chatCompletionRequest.tools = githubMcpClient.tools;
+            // Use aggregated tools from all servers
+            chatCompletionRequest.tools = allTools;
         }
         try {
-            const response = await chatCompletion(client, chatCompletionRequest, `mcpInference iteration ${iterationCount}`);
+            const response = await chatCompletion(client, chatCompletionRequest, `multiMcpInference iteration ${iterationCount}`);
             const assistantMessage = response.choices[0]?.message;
             const modelResponse = assistantMessage?.content;
             const toolCalls = assistantMessage?.tool_calls;
@@ -49551,9 +50756,9 @@ async function mcpInference(request, githubMcpClient) {
                 ...(toolCalls && { tool_calls: toolCalls }),
             });
             if (!toolCalls || toolCalls.length === 0) {
-                coreExports.info('No tool calls requested, ending GitHub MCP inference loop');
+                coreExports.info('No tool calls requested, ending multi-MCP inference loop');
                 if (request.responseFormat && !finalMessage) {
-                    coreExports.info('Making one more MCP loop with the requested response format...');
+                    coreExports.info('Making one more multi-MCP loop with the requested response format...');
                     messages.push({
                         role: 'user',
                         content: `Please provide your response in the exact ${request.responseFormat.type} format specified.`,
@@ -49566,16 +50771,68 @@ async function mcpInference(request, githubMcpClient) {
                 }
             }
             coreExports.info(`Model requested ${toolCalls.length} tool calls`);
-            const toolResults = await executeToolCalls(githubMcpClient.client, toolCalls);
+            // Route tool calls to appropriate servers
+            const toolResults = [];
+            for (const toolCall of toolCalls) {
+                const targetServer = toolToServer.get(toolCall.function.name);
+                if (!targetServer) {
+                    coreExports.warning(`Tool ${toolCall.function.name} not found in any connected server`);
+                    toolResults.push({
+                        tool_call_id: toolCall.id,
+                        role: 'tool',
+                        name: toolCall.function.name,
+                        content: `Error: Tool ${toolCall.function.name} not available on any connected server`,
+                    });
+                    continue;
+                }
+                coreExports.info(`Routing tool ${toolCall.function.name} to server ${targetServer.config.name}`);
+                try {
+                    const args = JSON.parse(toolCall.function.arguments);
+                    const result = await targetServer.client.callTool({
+                        name: toolCall.function.name,
+                        arguments: args,
+                    });
+                    // Extract text content from MCP response
+                    let contentText = '';
+                    if (result.content && Array.isArray(result.content)) {
+                        contentText = result.content
+                            .filter((item) => item.type === 'text' && item.text)
+                            .map((item) => item.text)
+                            .join('\n');
+                    }
+                    else if (typeof result.content === 'string') {
+                        contentText = result.content;
+                    }
+                    else {
+                        contentText = JSON.stringify(result.content);
+                    }
+                    toolResults.push({
+                        tool_call_id: toolCall.id,
+                        role: 'tool',
+                        name: toolCall.function.name,
+                        content: contentText,
+                    });
+                    coreExports.info(`Tool ${toolCall.function.name} executed successfully on ${targetServer.config.name}`);
+                }
+                catch (toolError) {
+                    coreExports.warning(`Failed to execute tool ${toolCall.function.name} on ${targetServer.config.name}: ${toolError}`);
+                    toolResults.push({
+                        tool_call_id: toolCall.id,
+                        role: 'tool',
+                        name: toolCall.function.name,
+                        content: `Error: ${toolError}`,
+                    });
+                }
+            }
             messages.push(...toolResults);
-            coreExports.info('Tool results added, continuing conversation...');
+            coreExports.info('Multi-server tool results added, continuing conversation...');
         }
         catch (error) {
             coreExports.error(`OpenAI API error: ${error}`);
             throw error;
         }
     }
-    coreExports.warning(`GitHub MCP inference loop exceeded maximum iterations (${maxIterations})`);
+    coreExports.warning(`Multi-MCP inference loop exceeded maximum iterations (${maxIterations})`);
     // Return the last assistant message content
     const lastAssistantMessage = messages
         .slice()
@@ -52642,22 +53899,89 @@ async function run() {
         }
         // Get GitHub MCP token (use dedicated token if provided, otherwise fall back to main token)
         const githubMcpToken = coreExports.getInput('github-mcp-token') || token;
+        const sentryToken = coreExports.getInput('sentry-token') || process.env.SENTRY_TOKEN;
+        const datadogApiKey = coreExports.getInput('datadog-api-key') || process.env.DATADOG_API_KEY;
+        const datadogAppKey = coreExports.getInput('datadog-app-key') || process.env.DATADOG_APP_KEY;
+        const azureClientId = coreExports.getInput('azure-client-id') || process.env.AZURE_CLIENT_ID;
+        const azureClientSecret = coreExports.getInput('azure-client-secret') || process.env.AZURE_CLIENT_SECRET;
+        const azureTenantId = coreExports.getInput('azure-tenant-id') || process.env.AZURE_TENANT_ID;
         const endpoint = coreExports.getInput('endpoint');
         // Build the inference request with pre-processed messages and response format
         const inferenceRequest = buildInferenceRequest(promptConfig, systemPrompt, prompt, modelName, maxTokens, endpoint, token);
-        const enableMcp = coreExports.getBooleanInput('enable-github-mcp') || false;
+        const enableMcp = coreExports.getBooleanInput('enable-mcp') || coreExports.getBooleanInput('enable-github-mcp') || false;
+        // Debug logging for MCP enablement
+        coreExports.info(`🔍 MCP Debug: enable-mcp=${coreExports.getInput('enable-mcp')}, enable-github-mcp=${coreExports.getInput('enable-github-mcp')}`);
+        coreExports.info(`🔍 MCP Debug: Parsed enable-mcp=${coreExports.getBooleanInput('enable-mcp')}, enable-github-mcp=${coreExports.getBooleanInput('enable-github-mcp')}`);
+        coreExports.info(`🔍 MCP Debug: Final enableMcp=${enableMcp}`);
         let modelResponse = null;
         if (enableMcp) {
-            const mcpClient = await connectToGitHubMCP(githubMcpToken);
-            if (mcpClient) {
-                modelResponse = await mcpInference(inferenceRequest, mcpClient);
+            coreExports.info('🚀 Starting multi-server MCP setup...');
+            // Setup multi-server registry
+            const registry = new MCPServerRegistry();
+            registry.register(new GitHubMCPFactory());
+            registry.register(new SentryMCPFactory());
+            registry.register(new DatadogMCPFactory());
+            registry.register(new AzureMCPFactory());
+            // Build credentials map from collected credentials
+            const credentialsMap = new Map();
+            if (githubMcpToken) {
+                credentialsMap.set('github', { token: githubMcpToken });
+            }
+            if (sentryToken) {
+                credentialsMap.set('sentry', { token: sentryToken });
+            }
+            if (datadogApiKey && datadogAppKey) {
+                credentialsMap.set('datadog', { apiKey: datadogApiKey, appKey: datadogAppKey });
+            }
+            if (azureClientId && azureClientSecret && azureTenantId) {
+                credentialsMap.set('azure', {
+                    clientId: azureClientId,
+                    clientSecret: azureClientSecret,
+                    tenantId: azureTenantId,
+                });
+            }
+            // Get server availability and configurations
+            const { available, unavailable, summary } = registry.createConfigsWithAvailability(credentialsMap);
+            // Connect to available servers
+            const connectedClients = [];
+            for (const config of available) {
+                coreExports.info(`🔗 Connecting to ${config.name}...`);
+                const client = await connectToMCPServer(config);
+                if (client) {
+                    connectedClients.push(client);
+                    coreExports.info(`✅ Connected to ${config.name}`);
+                }
+                else {
+                    coreExports.warning(`❌ Failed to connect to ${config.name}`);
+                }
+            }
+            // Graceful degradation logic
+            if (connectedClients.length === 0) {
+                coreExports.warning('⚠️ No MCP servers connected successfully, falling back to simple inference');
+                if (unavailable.length > 0) {
+                    coreExports.info(`💡 Unavailable servers: ${unavailable.map(s => `${s.serverId} (${s.reason})`).join(', ')}`);
+                }
+                modelResponse = await simpleInference(inferenceRequest);
             }
             else {
-                coreExports.warning('MCP connection failed, falling back to simple inference');
-                modelResponse = await simpleInference(inferenceRequest);
+                // Check minimum server requirement (can be configured via input)
+                const minServers = parseInt(coreExports.getInput('min-servers') || '1', 10);
+                if (!registry.hasMinimumServers({ available, unavailable, summary }, minServers)) {
+                    coreExports.warning(`⚠️ Only ${connectedClients.length} servers connected, but ${minServers} required. Proceeding with available servers.`);
+                }
+                coreExports.info(`🎯 Running multi-server inference with ${connectedClients.length} connected servers`);
+                // Log server status summary
+                const connectedNames = connectedClients.map(c => c.config.name).join(', ');
+                coreExports.info(`📊 Connected servers: ${connectedNames}`);
+                if (unavailable.length > 0) {
+                    const unavailableNames = unavailable.map(s => s.serverId).join(', ');
+                    coreExports.info(`📊 Unavailable servers: ${unavailableNames}`);
+                }
+                modelResponse = await multiMcpInference(inferenceRequest, connectedClients);
             }
         }
         else {
+            coreExports.info('📝 Running simple inference without MCP tools');
             modelResponse = await simpleInference(inferenceRequest);
         }
         coreExports.setOutput('response', modelResponse || '');
