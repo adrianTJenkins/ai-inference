@@ -150,8 +150,10 @@ describe('inference.ts', () => {
         readonly: true,
         priority: 1,
       },
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      client: {} as any,
+      client: {
+        callTool: vi.fn().mockResolvedValue({content: [{type: 'text', text: 'Tool result'}]}),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } as any,
       tools: [
         {
           type: 'function' as const,
@@ -182,16 +184,29 @@ describe('inference.ts', () => {
       const result = await mcpInference(mockRequest, mockMcpClient)
 
       expect(result).toBe('Hello, user!')
-      expect(core.info).toHaveBeenCalledWith('Running GitHub MCP inference with tools')
+      expect(core.info).toHaveBeenCalledWith('Running GitHub MCP inference with tools (backward compatibility mode)')
       expect(core.info).toHaveBeenCalledWith('MCP inference iteration 1')
-      expect(core.info).toHaveBeenCalledWith('No tool calls requested, ending GitHub MCP inference loop')
+      expect(core.info).toHaveBeenCalledWith('No tool calls requested, ending multi-MCP inference loop')
 
       // The MCP inference loop will always add the assistant message, even when there are no tool calls
       // So we don't check the exact messages, just that tools were included
       expect(mockCreate).toHaveBeenCalledTimes(1)
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const callArgs = mockCreate.mock.calls[0][0] as any
-      expect(callArgs.tools).toEqual(mockMcpClient.tools)
+      expect(callArgs.tools).toEqual([
+        {
+          type: 'function',
+          function: {
+            name: 'test-tool',
+            description: 'A test tool',
+            parameters: {
+              type: 'object',
+            },
+          },
+          serverId: 'test',
+          serverName: 'Test MCP',
+        },
+      ])
       expect(callArgs.response_format).toBeUndefined()
       expect(callArgs.model).toBe('gpt-4')
       expect(callArgs.max_tokens).toBe(100)
@@ -248,7 +263,11 @@ describe('inference.ts', () => {
       const result = await mcpInference(mockRequest, mockMcpClient)
 
       expect(result).toBe('Here is the final answer.')
-      expect(mockExecuteToolCalls).toHaveBeenCalledWith(mockMcpClient.client, toolCalls)
+      // In multi-server architecture, we call client.callTool directly instead of executeToolCalls
+      expect(mockMcpClient.client.callTool).toHaveBeenCalledWith({
+        name: 'test-tool',
+        arguments: {param: 'value'},
+      })
       expect(mockCreate).toHaveBeenCalledTimes(2)
 
       // Verify the second call includes the conversation history
@@ -298,7 +317,7 @@ describe('inference.ts', () => {
       const result = await mcpInference(mockRequest, mockMcpClient)
 
       expect(mockCreate).toHaveBeenCalledTimes(5) // Max iterations reached
-      expect(core.warning).toHaveBeenCalledWith('GitHub MCP inference loop exceeded maximum iterations (5)')
+      expect(core.warning).toHaveBeenCalledWith('Multi-MCP inference loop exceeded maximum iterations (5)')
       expect(result).toBe('Using tool again.') // Last assistant message
     })
 
@@ -319,7 +338,7 @@ describe('inference.ts', () => {
       const result = await mcpInference(mockRequest, mockMcpClient)
 
       expect(result).toBe('Hello, user!')
-      expect(core.info).toHaveBeenCalledWith('No tool calls requested, ending GitHub MCP inference loop')
+      expect(core.info).toHaveBeenCalledWith('No tool calls requested, ending multi-MCP inference loop')
       expect(mockExecuteToolCalls).not.toHaveBeenCalled()
     })
 
@@ -408,12 +427,25 @@ describe('inference.ts', () => {
 
       expect(result).toBe('{"result": "formatted response"}')
       expect(mockCreate).toHaveBeenCalledTimes(2)
-      expect(core.info).toHaveBeenCalledWith('Making one more MCP loop with the requested response format...')
+      expect(core.info).toHaveBeenCalledWith('Making one more multi-MCP loop with the requested response format...')
 
       // First call should have tools but no response format
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const firstCall = mockCreate.mock.calls[0][0] as any
-      expect(firstCall.tools).toEqual(mockMcpClient.tools)
+      expect(firstCall.tools).toEqual([
+        {
+          type: 'function',
+          function: {
+            name: 'test-tool',
+            description: 'A test tool',
+            parameters: {
+              type: 'object',
+            },
+          },
+          serverId: 'test',
+          serverName: 'Test MCP',
+        },
+      ])
       expect(firstCall.response_format).toBeUndefined()
 
       // Second call should have response format but no tools
@@ -507,13 +539,39 @@ describe('inference.ts', () => {
       // First call: tools but no response format
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const firstCall = mockCreate.mock.calls[0][0] as any
-      expect(firstCall.tools).toEqual(mockMcpClient.tools)
+      expect(firstCall.tools).toEqual([
+        {
+          type: 'function',
+          function: {
+            name: 'test-tool',
+            description: 'A test tool',
+            parameters: {
+              type: 'object',
+            },
+          },
+          serverId: 'test',
+          serverName: 'Test MCP',
+        },
+      ])
       expect(firstCall.response_format).toBeUndefined()
 
       // Second call: tools but no response format (after tool execution)
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const secondCall = mockCreate.mock.calls[1][0] as any
-      expect(secondCall.tools).toEqual(mockMcpClient.tools)
+      expect(secondCall.tools).toEqual([
+        {
+          type: 'function',
+          function: {
+            name: 'test-tool',
+            description: 'A test tool',
+            parameters: {
+              type: 'object',
+            },
+          },
+          serverId: 'test',
+          serverName: 'Test MCP',
+        },
+      ])
       expect(secondCall.response_format).toBeUndefined()
 
       // Third call: response format but no tools (final message)

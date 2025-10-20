@@ -1,6 +1,6 @@
 import * as core from '@actions/core'
 import OpenAI from 'openai'
-import {MCPServerClient, executeToolCalls, ToolCall} from './mcp.js'
+import {MCPServerClient, ToolCall} from './mcp.js'
 
 interface ChatMessage {
   role: 'system' | 'user' | 'assistant' | 'tool'
@@ -60,26 +60,49 @@ export async function simpleInference(request: InferenceRequest): Promise<string
 }
 
 /**
- * GitHub MCP-enabled inference with tool execution loop
+ * Multi-server MCP-enabled inference with tool execution loop
  */
-export async function mcpInference(
+export async function multiMcpInference(
   request: InferenceRequest,
-  githubMcpClient: MCPServerClient,
+  mcpClients: MCPServerClient[],
 ): Promise<string | null> {
-  core.info('Running GitHub MCP inference with tools')
+  core.info(`Running multi-server MCP inference with ${mcpClients.length} connected servers`)
+
+  if (mcpClients.length === 0) {
+    core.warning('No MCP clients provided, falling back to simple inference')
+    return simpleInference(request)
+  }
 
   const client = new OpenAI({
     apiKey: request.token,
     baseURL: request.endpoint,
   })
 
+  // Aggregate all tools from all servers with server identification
+  const allTools = mcpClients.flatMap(mcpClient =>
+    mcpClient.tools.map(tool => ({
+      ...tool,
+      // Add metadata to track which server owns this tool
+      serverId: mcpClient.config.id,
+      serverName: mcpClient.config.name,
+    })),
+  )
+
+  // Create tool-to-server mapping for routing tool calls
+  const toolToServer = new Map<string, MCPServerClient>()
+  mcpClients.forEach(mcpClient => {
+    mcpClient.tools.forEach(tool => {
+      toolToServer.set(tool.function.name, mcpClient)
+    })
+  })
+
+  core.info(`Aggregated ${allTools.length} tools from ${mcpClients.length} servers`)
+
   // Start with the pre-processed messages
   const messages: ChatMessage[] = [...request.messages]
 
   let iterationCount = 0
   const maxIterations = 5 // Prevent infinite loops
-  // We want to use response_format (e.g. JSON) on the last iteration only, so the model can output
-  // the final result in the expected format without interfering with tool calls
   let finalMessage = false
 
   while (iterationCount < maxIterations) {
@@ -97,11 +120,16 @@ export async function mcpInference(
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       chatCompletionRequest.response_format = request.responseFormat as any
     } else {
-      chatCompletionRequest.tools = githubMcpClient.tools as OpenAI.Chat.Completions.ChatCompletionTool[]
+      // Use aggregated tools from all servers
+      chatCompletionRequest.tools = allTools as OpenAI.Chat.Completions.ChatCompletionTool[]
     }
 
     try {
-      const response = await chatCompletion(client, chatCompletionRequest, `mcpInference iteration ${iterationCount}`)
+      const response = await chatCompletion(
+        client,
+        chatCompletionRequest,
+        `multiMcpInference iteration ${iterationCount}`,
+      )
 
       const assistantMessage = response.choices[0]?.message
       const modelResponse = assistantMessage?.content
@@ -116,10 +144,10 @@ export async function mcpInference(
       })
 
       if (!toolCalls || toolCalls.length === 0) {
-        core.info('No tool calls requested, ending GitHub MCP inference loop')
+        core.info('No tool calls requested, ending multi-MCP inference loop')
 
         if (request.responseFormat && !finalMessage) {
-          core.info('Making one more MCP loop with the requested response format...')
+          core.info('Making one more multi-MCP loop with the requested response format...')
           messages.push({
             role: 'user',
             content: `Please provide your response in the exact ${request.responseFormat.type} format specified.`,
@@ -132,16 +160,73 @@ export async function mcpInference(
       }
 
       core.info(`Model requested ${toolCalls.length} tool calls`)
-      const toolResults = await executeToolCalls(githubMcpClient.client, toolCalls as ToolCall[])
+
+      // Route tool calls to appropriate servers
+      const toolResults = []
+      for (const toolCall of toolCalls as ToolCall[]) {
+        const targetServer = toolToServer.get(toolCall.function.name)
+
+        if (!targetServer) {
+          core.warning(`Tool ${toolCall.function.name} not found in any connected server`)
+          toolResults.push({
+            tool_call_id: toolCall.id,
+            role: 'tool' as const,
+            name: toolCall.function.name,
+            content: `Error: Tool ${toolCall.function.name} not available on any connected server`,
+          })
+          continue
+        }
+
+        core.info(`Routing tool ${toolCall.function.name} to server ${targetServer.config.name}`)
+
+        try {
+          const args = JSON.parse(toolCall.function.arguments)
+          const result = await targetServer.client.callTool({
+            name: toolCall.function.name,
+            arguments: args,
+          })
+
+          // Extract text content from MCP response
+          let contentText = ''
+          if (result.content && Array.isArray(result.content)) {
+            contentText = result.content
+              .filter((item: {type: string; text?: string}) => item.type === 'text' && item.text)
+              .map((item: {text: string}) => item.text)
+              .join('\n')
+          } else if (typeof result.content === 'string') {
+            contentText = result.content
+          } else {
+            contentText = JSON.stringify(result.content)
+          }
+
+          toolResults.push({
+            tool_call_id: toolCall.id,
+            role: 'tool' as const,
+            name: toolCall.function.name,
+            content: contentText,
+          })
+
+          core.info(`Tool ${toolCall.function.name} executed successfully on ${targetServer.config.name}`)
+        } catch (toolError) {
+          core.warning(`Failed to execute tool ${toolCall.function.name} on ${targetServer.config.name}: ${toolError}`)
+          toolResults.push({
+            tool_call_id: toolCall.id,
+            role: 'tool' as const,
+            name: toolCall.function.name,
+            content: `Error: ${toolError}`,
+          })
+        }
+      }
+
       messages.push(...toolResults)
-      core.info('Tool results added, continuing conversation...')
+      core.info('Multi-server tool results added, continuing conversation...')
     } catch (error) {
       core.error(`OpenAI API error: ${error}`)
       throw error
     }
   }
 
-  core.warning(`GitHub MCP inference loop exceeded maximum iterations (${maxIterations})`)
+  core.warning(`Multi-MCP inference loop exceeded maximum iterations (${maxIterations})`)
 
   // Return the last assistant message content
   const lastAssistantMessage = messages
@@ -150,6 +235,19 @@ export async function mcpInference(
     .find(msg => msg.role === 'assistant')
 
   return lastAssistantMessage?.content || null
+}
+
+/**
+ * GitHub MCP-enabled inference with tool execution loop
+ * (Backward compatibility - now wraps multiMcpInference)
+ */
+export async function mcpInference(
+  request: InferenceRequest,
+  githubMcpClient: MCPServerClient,
+): Promise<string | null> {
+  core.info('Running GitHub MCP inference with tools (backward compatibility mode)')
+  // Use the new multi-server function with a single GitHub client
+  return multiMcpInference(request, [githubMcpClient])
 }
 
 /**
