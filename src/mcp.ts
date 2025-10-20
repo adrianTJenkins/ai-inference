@@ -36,11 +36,6 @@ export interface ToolCall {
   }
 }
 
-interface MultiServerTool extends MCPTool {
-  serverId: string
-  serverName: string
-}
-
 export interface MCPServerConfig {
   id: string
   name: string
@@ -62,15 +57,6 @@ export interface MCPServerClient {
   client: Client
   tools: Array<MCPTool>
   connected: boolean
-}
-
-export interface MultiMCPManager {
-  servers: Map<string, MCPServerClient>
-  toolRegistry: Map<string, MCPServerClient>
-
-  connectToServers(configs: MCPServerConfig[]): Promise<void>
-  executeToolCall(toolCall: ToolCall): Promise<ToolResult>
-  getAllTools(): Array<MultiServerTool>
 }
 
 // Factory classes are now imported from the mcp-factories module
