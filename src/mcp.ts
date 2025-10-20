@@ -1,6 +1,15 @@
 import * as core from '@actions/core'
 import {Client} from '@modelcontextprotocol/sdk/client/index.js'
 import {StreamableHTTPClientTransport} from '@modelcontextprotocol/sdk/client/streamableHttp.js'
+import {StdioClientTransport} from '@modelcontextprotocol/sdk/client/stdio.js'
+import {
+  MCPServerRegistry,
+  type MCPServerCredentials,
+  GitHubMCPFactory,
+  SentryMCPFactory,
+  DatadogMCPFactory,
+  AzureMCPFactory,
+} from './mcp-factories/index.js'
 
 export interface ToolResult {
   tool_call_id: string
@@ -64,19 +73,167 @@ export interface MultiMCPManager {
   getAllTools(): Array<MultiServerTool>
 }
 
+// Factory classes are now imported from the mcp-factories module
+// Re-export for backward compatibility
+export {
+  MCPServerFactory,
+  MCPServerRegistry,
+  type MCPServerCredentials,
+  GitHubMCPFactory,
+  SentryMCPFactory,
+  DatadogMCPFactory,
+  AzureMCPFactory,
+} from './mcp-factories/index.js'
+
+/**
+ * Generic function to connect to any MCP server based on configuration
+ */
+export async function connectToMCPServer(config: MCPServerConfig): Promise<MCPServerClient | null> {
+  core.info(`Connecting to ${config.name} server...`)
+
+  let transport: StreamableHTTPClientTransport | StdioClientTransport
+
+  try {
+    // Create transport based on server type
+    if (config.type === 'http') {
+      if (!config.url) {
+        throw new Error(`HTTP server ${config.name} requires URL`)
+      }
+
+      transport = new StreamableHTTPClientTransport(new URL(config.url), {
+        requestInit: {
+          headers: config.headers || {},
+        },
+      })
+    } else if (config.type === 'stdio') {
+      if (!config.command || !config.args) {
+        throw new Error(`Stdio server ${config.name} requires command and args`)
+      }
+
+      // Filter out undefined values from environment
+      const envVars: Record<string, string> = {}
+      if (config.env) {
+        for (const [key, value] of Object.entries(config.env)) {
+          if (value !== undefined) {
+            envVars[key] = value
+          }
+        }
+      }
+
+      transport = new StdioClientTransport({
+        command: config.command,
+        args: config.args,
+        env: {
+          ...envVars,
+        },
+      })
+    } else {
+      throw new Error(`Unsupported transport type: ${config.type}`)
+    }
+
+    const client = new Client({
+      name: 'ai-inference-action',
+      version: '1.0.0',
+      transport,
+    })
+
+    await client.connect(transport)
+    core.info(`Successfully connected to ${config.name} server`)
+
+    const toolsResponse = await client.listTools()
+    core.info(`Retrieved ${toolsResponse.tools?.length || 0} tools from ${config.name} server`)
+
+    // Map MCP tools → Azure AI Inference tool definitions
+    const tools = (toolsResponse.tools || []).map(t => ({
+      type: 'function' as const,
+      function: {
+        name: t.name,
+        description: t.description,
+        parameters: t.inputSchema,
+      },
+    }))
+
+    core.info(`Mapped ${tools.length} tools from ${config.name} for Azure AI Inference`)
+
+    return {
+      config,
+      client,
+      tools,
+      connected: true,
+    }
+  } catch (mcpError) {
+    core.warning(`Failed to connect to ${config.name} server: ${mcpError}`)
+    return null
+  }
+}
+
+/**
+ * Create server configurations using the factory pattern
+ * (Backward compatibility wrapper)
+ */
+export function createServerConfigs(
+  githubToken?: string,
+  sentryToken?: string,
+  datadogApiKey?: string,
+  datadogAppKey?: string,
+): MCPServerConfig[] {
+  const registry = new MCPServerRegistry()
+
+  // Register all available factories
+  registry.register(new GitHubMCPFactory())
+  registry.register(new SentryMCPFactory())
+  registry.register(new DatadogMCPFactory())
+  registry.register(new AzureMCPFactory())
+
+  // Map legacy parameters to credentials
+  const credentialsMap = new Map<string, MCPServerCredentials>()
+
+  if (githubToken) {
+    credentialsMap.set('github', {token: githubToken})
+  }
+
+  if (sentryToken) {
+    credentialsMap.set('sentry', {token: sentryToken})
+  }
+
+  if (datadogApiKey && datadogAppKey) {
+    credentialsMap.set('datadog', {apiKey: datadogApiKey, appKey: datadogAppKey})
+  }
+
+  // Azure doesn't require specific credentials
+  credentialsMap.set('azure', {})
+
+  return registry.createConfigs(credentialsMap)
+}
+
+/**
+ * Create server configurations using factory pattern with credentials map
+ * (New recommended approach)
+ */
+export function createServerConfigsFromCredentials(
+  credentialsMap: Map<string, MCPServerCredentials>,
+): MCPServerConfig[] {
+  const registry = new MCPServerRegistry()
+
+  // Register all available factories
+  registry.register(new GitHubMCPFactory())
+  registry.register(new SentryMCPFactory())
+  registry.register(new DatadogMCPFactory())
+  registry.register(new AzureMCPFactory())
+
+  return registry.createConfigs(credentialsMap)
+}
+
 /**
  * Connect to the GitHub MCP server and retrieve available tools
+ * (Backward compatibility wrapper around connectToMCPServer)
  */
 export async function connectToGitHubMCP(token: string): Promise<MCPServerClient | null> {
-  const githubMcpUrl = 'https://api.githubcopilot.com/mcp/'
-
-  core.info('Connecting to GitHub MCP server...')
-
   const config: MCPServerConfig = {
     id: 'github',
     name: 'GitHub MCP',
     type: 'http',
-    url: githubMcpUrl,
+    url: 'https://api.githubcopilot.com/mcp/',
     headers: {
       Authorization: `Bearer ${token}`,
       'X-MCP-Readonly': 'true',
@@ -85,51 +242,7 @@ export async function connectToGitHubMCP(token: string): Promise<MCPServerClient
     priority: 1,
   }
 
-  const transport = new StreamableHTTPClientTransport(new URL(githubMcpUrl), {
-    requestInit: {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'X-MCP-Readonly': 'true',
-      },
-    },
-  })
-
-  const client = new Client({
-    name: 'ai-inference-action',
-    version: '1.0.0',
-    transport,
-  })
-
-  try {
-    await client.connect(transport)
-  } catch (mcpError) {
-    core.warning(`Failed to connect to GitHub MCP server: ${mcpError}`)
-    return null
-  }
-
-  core.info('Successfully connected to GitHub MCP server')
-
-  const toolsResponse = await client.listTools()
-  core.info(`Retrieved ${toolsResponse.tools?.length || 0} tools from GitHub MCP server`)
-
-  // Map GitHub MCP tools → Azure AI Inference tool definitions
-  const tools = (toolsResponse.tools || []).map(t => ({
-    type: 'function' as const,
-    function: {
-      name: t.name,
-      description: t.description,
-      parameters: t.inputSchema,
-    },
-  }))
-
-  core.info(`Mapped ${tools.length} GitHub MCP tools for Azure AI Inference`)
-
-  return {
-    config,
-    client,
-    tools,
-    connected: true,
-  }
+  return connectToMCPServer(config)
 }
 
 /**
