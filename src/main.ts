@@ -94,13 +94,7 @@ export async function run(): Promise<void> {
     const enableMcp = core.getBooleanInput('enable-mcp') || core.getBooleanInput('enable-github-mcp') || false
 
     // Debug logging for MCP enablement
-    core.info(
-      `🔍 MCP Debug: enable-mcp=${core.getInput('enable-mcp')}, enable-github-mcp=${core.getInput('enable-github-mcp')}`,
-    )
-    core.info(
-      `🔍 MCP Debug: Parsed enable-mcp=${core.getBooleanInput('enable-mcp')}, enable-github-mcp=${core.getBooleanInput('enable-github-mcp')}`,
-    )
-    core.info(`🔍 MCP Debug: Final enableMcp=${enableMcp}`)
+    core.info(`🔍 MCP Debug: enableMcp=${enableMcp}`)
 
     let modelResponse: string | null = null
 
