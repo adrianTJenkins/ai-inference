@@ -2,7 +2,7 @@ import * as core from '@actions/core'
 import * as fs from 'fs'
 import * as tmp from 'tmp'
 import {
-  connectToMCPServer,
+  connectToMCPServerWithFiltering,
   MCPServerRegistry,
   GitHubMCPFactory,
   SentryMCPFactory,
@@ -140,14 +140,20 @@ export async function run(): Promise<void> {
       // Get server availability and configurations
       const {available, unavailable, summary} = registry.createConfigsWithAvailability(credentialsMap)
 
-      // Connect to available servers
+      // Connect to available servers with tool filtering
       const connectedClients: MCPServerClient[] = []
       for (const config of available) {
-        core.info(`🔗 Connecting to ${config.name}...`)
-        const client = await connectToMCPServer(config)
+        const factory = registry.getFactory(config.id)
+        if (!factory) {
+          core.warning(`❌ No factory found for ${config.name}`)
+          continue
+        }
+
+        const allowedTools = factory.getAllowedTools()
+        core.info(`🔗 Connecting to ${config.name} with allowed tools: ${allowedTools.join(', ')}...`)
+        const client = await connectToMCPServerWithFiltering(config, allowedTools)
         if (client) {
           connectedClients.push(client)
-          core.info(`✅ Connected to ${config.name}`)
         } else {
           core.warning(`❌ Failed to connect to ${config.name}`)
         }

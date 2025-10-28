@@ -13,6 +13,10 @@ export class AzureMCPFactory extends MCPServerFactory {
     return 'Azure MCP'
   }
 
+  getAllowedTools(): string[] {
+    return ['execute_kql', 'get_resource_logs']
+  }
+
   isCredentialsValid(credentials: MCPServerCredentials): boolean {
     // Azure MCP requires Service Principal authentication
     return !!(credentials.clientId && credentials.clientSecret && credentials.tenantId)

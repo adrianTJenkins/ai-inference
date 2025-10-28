@@ -16,6 +16,7 @@ export abstract class MCPServerFactory {
   abstract getName(): string
   abstract isCredentialsValid(credentials: MCPServerCredentials): boolean
   abstract createServerConfig(credentials: MCPServerCredentials): MCPServerConfig
+  abstract getAllowedTools(): string[]
 
   protected validateCredentials(credentials: MCPServerCredentials, requiredFields: string[]): void {
     for (const field of requiredFields) {

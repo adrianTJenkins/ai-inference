@@ -13,6 +13,10 @@ export class DatadogMCPFactory extends MCPServerFactory {
     return 'Datadog MCP'
   }
 
+  getAllowedTools(): string[] {
+    return ['get_dashboard', 'search_monitors', 'get_metrics']
+  }
+
   isCredentialsValid(credentials: MCPServerCredentials): boolean {
     return !!credentials.apiKey && !!credentials.appKey
   }

@@ -1,4 +1,4 @@
-import { MCPServerFactory } from './base.js';
+import { MCPServerFactory } from './server-factory.js';
 /**
  * Sentry MCP Server Factory
  */
@@ -8,6 +8,9 @@ export class SentryMCPFactory extends MCPServerFactory {
     }
     getName() {
         return 'Sentry MCP';
+    }
+    getAllowedTools() {
+        return ['get_issue_details', 'search_errors'];
     }
     isCredentialsValid(credentials) {
         return !!credentials.token;

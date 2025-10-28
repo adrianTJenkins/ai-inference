@@ -1,8 +1,8 @@
 import * as core from '@actions/core';
 import * as fs from 'fs';
 import * as tmp from 'tmp';
-import { connectToGitHubMCP } from './mcp.js';
-import { simpleInference, mcpInference } from './inference.js';
+import { connectToMCPServerWithFiltering, MCPServerRegistry, GitHubMCPFactory, SentryMCPFactory, DatadogMCPFactory, AzureMCPFactory, } from './mcp.js';
+import { simpleInference, multiMcpInference } from './inference.js';
 import { loadContentFromFileOrInput, buildInferenceRequest } from './helpers.js';
 import { loadPromptFile, parseTemplateVariables, isPromptYamlFile, parseFileTemplateVariables, } from './prompt.js';
 /**
@@ -46,22 +46,94 @@ export async function run() {
         }
         // Get GitHub MCP token (use dedicated token if provided, otherwise fall back to main token)
         const githubMcpToken = core.getInput('github-mcp-token') || token;
+        const sentryToken = core.getInput('sentry-token') || process.env.SENTRY_TOKEN;
+        const datadogApiKey = core.getInput('datadog-api-key') || process.env.DATADOG_API_KEY;
+        const datadogAppKey = core.getInput('datadog-app-key') || process.env.DATADOG_APP_KEY;
+        const azureClientId = core.getInput('azure-client-id') || process.env.AZURE_CLIENT_ID;
+        const azureClientSecret = core.getInput('azure-client-secret') || process.env.AZURE_CLIENT_SECRET;
+        const azureTenantId = core.getInput('azure-tenant-id') || process.env.AZURE_TENANT_ID;
         const endpoint = core.getInput('endpoint');
         // Build the inference request with pre-processed messages and response format
         const inferenceRequest = buildInferenceRequest(promptConfig, systemPrompt, prompt, modelName, maxTokens, endpoint, token);
-        const enableMcp = core.getBooleanInput('enable-github-mcp') || false;
+        const enableMcp = core.getBooleanInput('enable-mcp') || core.getBooleanInput('enable-github-mcp') || false;
+        // Debug logging for MCP enablement
+        core.info(`🔍 MCP Debug: enable-mcp=${core.getInput('enable-mcp')}, enable-github-mcp=${core.getInput('enable-github-mcp')}`);
+        core.info(`🔍 MCP Debug: Parsed enable-mcp=${core.getBooleanInput('enable-mcp')}, enable-github-mcp=${core.getBooleanInput('enable-github-mcp')}`);
+        core.info(`🔍 MCP Debug: Final enableMcp=${enableMcp}`);
         let modelResponse = null;
         if (enableMcp) {
-            const mcpClient = await connectToGitHubMCP(githubMcpToken);
-            if (mcpClient) {
-                modelResponse = await mcpInference(inferenceRequest, mcpClient);
+            core.info('🚀 Starting multi-server MCP setup...');
+            // Setup multi-server registry
+            const registry = new MCPServerRegistry();
+            registry.register(new GitHubMCPFactory());
+            registry.register(new SentryMCPFactory());
+            registry.register(new DatadogMCPFactory());
+            registry.register(new AzureMCPFactory());
+            // Build credentials map from collected credentials
+            const credentialsMap = new Map();
+            if (githubMcpToken) {
+                credentialsMap.set('github', { token: githubMcpToken });
+            }
+            if (sentryToken) {
+                credentialsMap.set('sentry', { token: sentryToken });
+            }
+            if (datadogApiKey && datadogAppKey) {
+                credentialsMap.set('datadog', { apiKey: datadogApiKey, appKey: datadogAppKey });
+            }
+            if (azureClientId && azureClientSecret && azureTenantId) {
+                credentialsMap.set('azure', {
+                    clientId: azureClientId,
+                    clientSecret: azureClientSecret,
+                    tenantId: azureTenantId,
+                });
+            }
+            // Get server availability and configurations
+            const { available, unavailable, summary } = registry.createConfigsWithAvailability(credentialsMap);
+            // Connect to available servers with tool filtering
+            const connectedClients = [];
+            for (const config of available) {
+                const factory = registry.getFactory(config.id);
+                if (!factory) {
+                    core.warning(`❌ No factory found for ${config.name}`);
+                    continue;
+                }
+                const allowedTools = factory.getAllowedTools();
+                core.info(`🔗 Connecting to ${config.name} with allowed tools: ${allowedTools.join(', ')}...`);
+                const client = await connectToMCPServerWithFiltering(config, allowedTools);
+                if (client) {
+                    connectedClients.push(client);
+                }
+                else {
+                    core.warning(`❌ Failed to connect to ${config.name}`);
+                }
+            }
+            // Graceful degradation logic
+            if (connectedClients.length === 0) {
+                core.warning('⚠️ No MCP servers connected successfully, falling back to simple inference');
+                if (unavailable.length > 0) {
+                    core.info(`💡 Unavailable servers: ${unavailable.map(s => `${s.serverId} (${s.reason})`).join(', ')}`);
+                }
+                modelResponse = await simpleInference(inferenceRequest);
             }
             else {
-                core.warning('MCP connection failed, falling back to simple inference');
-                modelResponse = await simpleInference(inferenceRequest);
+                // Check minimum server requirement (can be configured via input)
+                const minServers = parseInt(core.getInput('min-servers') || '1', 10);
+                if (!registry.hasMinimumServers({ available, unavailable, summary }, minServers)) {
+                    core.warning(`⚠️ Only ${connectedClients.length} servers connected, but ${minServers} required. Proceeding with available servers.`);
+                }
+                core.info(`🎯 Running multi-server inference with ${connectedClients.length} connected servers`);
+                // Log server status summary
+                const connectedNames = connectedClients.map(c => c.config.name).join(', ');
+                core.info(`📊 Connected servers: ${connectedNames}`);
+                if (unavailable.length > 0) {
+                    const unavailableNames = unavailable.map(s => s.serverId).join(', ');
+                    core.info(`📊 Unavailable servers: ${unavailableNames}`);
+                }
+                modelResponse = await multiMcpInference(inferenceRequest, connectedClients);
             }
         }
         else {
+            core.info('📝 Running simple inference without MCP tools');
             modelResponse = await simpleInference(inferenceRequest);
         }
         core.setOutput('response', modelResponse || '');
