@@ -13,6 +13,10 @@ export class GitHubMCPFactory extends MCPServerFactory {
     return 'GitHub MCP'
   }
 
+  getAllowedTools(): string[] {
+    return ['search_issues', 'get_issue', 'search_code']
+  }
+
   isCredentialsValid(credentials: MCPServerCredentials): boolean {
     return !!credentials.token
   }

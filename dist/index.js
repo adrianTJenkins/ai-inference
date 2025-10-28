@@ -43792,6 +43792,9 @@ class GitHubMCPFactory extends MCPServerFactory {
     getName() {
         return 'GitHub MCP';
     }
+    getAllowedTools() {
+        return ['search_issues', 'get_issue', 'search_code'];
+    }
     isCredentialsValid(credentials) {
         return !!credentials.token;
     }
@@ -43821,6 +43824,9 @@ class SentryMCPFactory extends MCPServerFactory {
     }
     getName() {
         return 'Sentry MCP';
+    }
+    getAllowedTools() {
+        return ['get_issue_details', 'search_issues'];
     }
     isCredentialsValid(credentials) {
         return !!credentials.token;
@@ -43854,6 +43860,9 @@ class DatadogMCPFactory extends MCPServerFactory {
     getName() {
         return 'Datadog MCP';
     }
+    getAllowedTools() {
+        return ['get_datadog_metric', 'search_datadog_monitors'];
+    }
     isCredentialsValid(credentials) {
         return !!credentials.apiKey && !!credentials.appKey;
     }
@@ -43883,6 +43892,9 @@ class AzureMCPFactory extends MCPServerFactory {
     getName() {
         return 'Azure MCP';
     }
+    getAllowedTools() {
+        return ['kusto'];
+    }
     isCredentialsValid(credentials) {
         // Azure MCP requires Service Principal authentication
         return !!(credentials.clientId && credentials.clientSecret && credentials.tenantId);
@@ -43910,10 +43922,10 @@ class AzureMCPFactory extends MCPServerFactory {
 }
 
 /**
- * Generic function to connect to any MCP server based on configuration
+ * Connect to an MCP server with tool filtering based on factory configuration
  */
-async function connectToMCPServer(config) {
-    coreExports.info(`Connecting to ${config.name} server...`);
+async function connectToMCPServerWithFiltering(config, allowedTools) {
+    coreExports.info(`Connecting to ${config.name} server with tool filtering...`);
     let transport;
     try {
         // Create transport based on server type
@@ -43960,8 +43972,10 @@ async function connectToMCPServer(config) {
         coreExports.info(`Successfully connected to ${config.name} server`);
         const toolsResponse = await client.listTools();
         coreExports.info(`Retrieved ${toolsResponse.tools?.length || 0} tools from ${config.name} server`);
+        // Filter tools based on allowed tools list
+        const filteredTools = (toolsResponse.tools || []).filter(t => allowedTools.includes(t.name));
         // Map MCP tools → Azure AI Inference tool definitions
-        const tools = (toolsResponse.tools || []).map(t => ({
+        const tools = filteredTools.map(t => ({
             type: 'function',
             function: {
                 name: t.name,
@@ -43969,7 +43983,7 @@ async function connectToMCPServer(config) {
                 parameters: t.inputSchema,
             },
         }));
-        coreExports.info(`Mapped ${tools.length} tools from ${config.name} for Azure AI Inference`);
+        coreExports.info(`✅ Connected to ${config.name} with ${tools.length} filtered tools: ${tools.map(t => t.function.name).join(', ')}`);
         return {
             config,
             client,
@@ -53942,14 +53956,19 @@ async function run() {
             }
             // Get server availability and configurations
             const { available, unavailable, summary } = registry.createConfigsWithAvailability(credentialsMap);
-            // Connect to available servers
+            // Connect to available servers with tool filtering
             const connectedClients = [];
             for (const config of available) {
-                coreExports.info(`🔗 Connecting to ${config.name}...`);
-                const client = await connectToMCPServer(config);
+                const factory = registry.getFactory(config.id);
+                if (!factory) {
+                    coreExports.warning(`❌ No factory found for ${config.name}`);
+                    continue;
+                }
+                const allowedTools = factory.getAllowedTools();
+                coreExports.info(`🔗 Connecting to ${config.name} with allowed tools: ${allowedTools.join(', ')}...`);
+                const client = await connectToMCPServerWithFiltering(config, allowedTools);
                 if (client) {
                     connectedClients.push(client);
-                    coreExports.info(`✅ Connected to ${config.name}`);
                 }
                 else {
                     coreExports.warning(`❌ Failed to connect to ${config.name}`);

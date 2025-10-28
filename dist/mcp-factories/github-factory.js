@@ -1,4 +1,4 @@
-import { MCPServerFactory } from './base.js';
+import { MCPServerFactory } from './server-factory.js';
 /**
  * GitHub MCP Server Factory
  */
@@ -8,6 +8,9 @@ export class GitHubMCPFactory extends MCPServerFactory {
     }
     getName() {
         return 'GitHub MCP';
+    }
+    getAllowedTools() {
+        return ['search_issues', 'get_issue', 'search_code'];
     }
     isCredentialsValid(credentials) {
         return !!credentials.token;

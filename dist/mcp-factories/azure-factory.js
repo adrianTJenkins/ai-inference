@@ -1,4 +1,4 @@
-import { MCPServerFactory } from './base.js';
+import { MCPServerFactory } from './server-factory.js';
 /**
  * Azure MCP Server Factory
  */
@@ -9,13 +9,17 @@ export class AzureMCPFactory extends MCPServerFactory {
     getName() {
         return 'Azure MCP';
     }
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    isCredentialsValid(_credentials) {
-        // Azure MCP doesn't require specific credentials, always available
-        return true;
+    getAllowedTools() {
+        return ['kusto'];
     }
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    createServerConfig(_credentials) {
+    isCredentialsValid(credentials) {
+        // Azure MCP requires Service Principal authentication
+        return !!(credentials.clientId && credentials.clientSecret && credentials.tenantId);
+    }
+    createServerConfig(credentials) {
+        if (!this.isCredentialsValid(credentials)) {
+            throw new Error('Azure MCP requires clientId, clientSecret, and tenantId');
+        }
         return {
             id: 'azure',
             name: 'Azure MCP',
@@ -23,6 +27,9 @@ export class AzureMCPFactory extends MCPServerFactory {
             command: 'npx',
             args: ['-y', '--no-update-notifier', '@azure/mcp@latest', 'server', 'start'],
             env: {
+                AZURE_CLIENT_ID: credentials.clientId,
+                AZURE_CLIENT_SECRET: credentials.clientSecret,
+                AZURE_TENANT_ID: credentials.tenantId,
                 NO_UPDATE_NOTIFIER: '1',
                 NPM_CONFIG_UPDATE_NOTIFIER: 'false',
             },

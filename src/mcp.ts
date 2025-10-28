@@ -154,6 +154,96 @@ export async function connectToMCPServer(config: MCPServerConfig): Promise<MCPSe
 }
 
 /**
+ * Connect to an MCP server with tool filtering based on factory configuration
+ */
+export async function connectToMCPServerWithFiltering(
+  config: MCPServerConfig,
+  allowedTools: string[],
+): Promise<MCPServerClient | null> {
+  core.info(`Connecting to ${config.name} server with tool filtering...`)
+
+  let transport: StreamableHTTPClientTransport | StdioClientTransport
+
+  try {
+    // Create transport based on server type
+    if (config.type === 'http') {
+      if (!config.url) {
+        throw new Error(`HTTP server ${config.name} requires URL`)
+      }
+
+      transport = new StreamableHTTPClientTransport(new URL(config.url), {
+        requestInit: {
+          headers: config.headers || {},
+        },
+      })
+    } else if (config.type === 'stdio') {
+      if (!config.command || !config.args) {
+        throw new Error(`Stdio server ${config.name} requires command and args`)
+      }
+
+      // Filter out undefined values from environment
+      const envVars: Record<string, string> = {}
+      if (config.env) {
+        for (const [key, value] of Object.entries(config.env)) {
+          if (value !== undefined) {
+            envVars[key] = value
+          }
+        }
+      }
+
+      transport = new StdioClientTransport({
+        command: config.command,
+        args: config.args,
+        env: {
+          ...envVars,
+        },
+      })
+    } else {
+      throw new Error(`Unsupported transport type: ${config.type}`)
+    }
+
+    const client = new Client({
+      name: 'ai-inference-action',
+      version: '1.0.0',
+      transport,
+    })
+
+    await client.connect(transport)
+    core.info(`Successfully connected to ${config.name} server`)
+
+    const toolsResponse = await client.listTools()
+    core.info(`Retrieved ${toolsResponse.tools?.length || 0} tools from ${config.name} server`)
+
+    // Filter tools based on allowed tools list
+    const filteredTools = (toolsResponse.tools || []).filter(t => allowedTools.includes(t.name))
+
+    // Map MCP tools → Azure AI Inference tool definitions
+    const tools = filteredTools.map(t => ({
+      type: 'function' as const,
+      function: {
+        name: t.name,
+        description: t.description,
+        parameters: t.inputSchema,
+      },
+    }))
+
+    core.info(
+      `✅ Connected to ${config.name} with ${tools.length} filtered tools: ${tools.map(t => t.function.name).join(', ')}`,
+    )
+
+    return {
+      config,
+      client,
+      tools,
+      connected: true,
+    }
+  } catch (mcpError) {
+    core.warning(`Failed to connect to ${config.name} server: ${mcpError}`)
+    return null
+  }
+}
+
+/**
  * Create server configurations using the factory pattern
  * (Backward compatibility wrapper)
  */

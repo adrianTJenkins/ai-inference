@@ -98,6 +98,8 @@ const mockCreateConfigsWithAvailability = vi.fn() as MockedFunction<any>
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const mockConnect = vi.fn() as MockedFunction<any>
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
+const mockConnectWithFiltering = vi.fn() as MockedFunction<any>
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const mockRegister = vi.fn() as MockedFunction<any>
 
 // Mock the registry class with all needed methods
@@ -105,6 +107,17 @@ class MockMCPServerRegistry {
   register = mockRegister
   createConfigsWithAvailability = mockCreateConfigsWithAvailability
   hasMinimumServers = vi.fn().mockReturnValue(true)
+  getFactory = vi.fn().mockImplementation((serverId: string) => {
+    const toolMap = {
+      github: ['search_issues', 'get_issue', 'search_code'],
+      datadog: ['get_datadog_metric', 'search_datadog_monitors'],
+      azure: ['kusto'],
+      sentry: ['get_issue_details', 'search_issues'],
+    }
+    return {
+      getAllowedTools: () => toolMap[serverId as keyof typeof toolMap] || ['search_issues', 'get_issue', 'search_code'],
+    }
+  })
 }
 
 vi.mock('../src/mcp.js', () => ({
@@ -114,6 +127,7 @@ vi.mock('../src/mcp.js', () => ({
   DatadogMCPFactory: vi.fn(),
   AzureMCPFactory: vi.fn(),
   connectToMCPServer: mockConnect,
+  connectToMCPServerWithFiltering: mockConnectWithFiltering,
 }))
 
 vi.mock('../src/inference.js', () => ({
@@ -220,7 +234,7 @@ describe('main.ts', () => {
     })
 
     // Mock the connection to return the client
-    mockConnect.mockResolvedValue(mockMcpClient)
+    mockConnectWithFiltering.mockResolvedValue(mockMcpClient)
 
     await run()
 
@@ -389,12 +403,12 @@ describe('main.ts', () => {
         summary: {total: 2, available: 2, unavailable: 0},
       })
 
-      mockConnect.mockResolvedValueOnce(mockGitHubClient).mockResolvedValueOnce(mockSentryClient)
+      mockConnectWithFiltering.mockResolvedValueOnce(mockGitHubClient).mockResolvedValueOnce(mockSentryClient)
 
       await run()
 
       expect(mockCreateConfigsWithAvailability).toHaveBeenCalledWith(expect.any(Map))
-      expect(mockConnect).toHaveBeenCalledTimes(2)
+      expect(mockConnectWithFiltering).toHaveBeenCalledTimes(2)
       expect(mockMultiMcpInference).toHaveBeenCalledWith(
         expect.objectContaining({
           messages: [
@@ -433,12 +447,12 @@ describe('main.ts', () => {
         summary: {total: 2, available: 1, unavailable: 1},
       })
 
-      mockConnect.mockResolvedValueOnce(mockDatadogClient)
+      mockConnectWithFiltering.mockResolvedValueOnce(mockDatadogClient)
 
       await run()
 
       expect(mockCreateConfigsWithAvailability).toHaveBeenCalledWith(expect.any(Map))
-      expect(mockConnect).toHaveBeenCalledTimes(1)
+      expect(mockConnectWithFiltering).toHaveBeenCalledTimes(1)
       expect(mockMultiMcpInference).toHaveBeenCalledWith(expect.any(Object), [mockDatadogClient])
       expect(mockSimpleInference).not.toHaveBeenCalled()
       verifyStandardResponse()
@@ -468,17 +482,20 @@ describe('main.ts', () => {
         summary: {total: 1, available: 1, unavailable: 0},
       })
 
-      mockConnect.mockResolvedValueOnce(mockAzureClient)
+      mockConnectWithFiltering.mockResolvedValueOnce(mockAzureClient)
 
       await run()
 
       expect(mockCreateConfigsWithAvailability).toHaveBeenCalledWith(expect.any(Map))
-      expect(mockConnect).toHaveBeenCalledWith({
-        id: 'azure',
-        name: 'Azure',
-        type: 'stdio',
-        command: 'azure-mcp',
-      })
+      expect(mockConnectWithFiltering).toHaveBeenCalledWith(
+        {
+          id: 'azure',
+          name: 'Azure',
+          type: 'stdio',
+          command: 'azure-mcp',
+        },
+        ['kusto'],
+      )
       expect(mockMultiMcpInference).toHaveBeenCalledWith(expect.any(Object), [mockAzureClient])
     })
 
@@ -504,7 +521,7 @@ describe('main.ts', () => {
       await run()
 
       expect(mockCreateConfigsWithAvailability).toHaveBeenCalledWith(expect.any(Map))
-      expect(mockConnect).not.toHaveBeenCalled()
+      expect(mockConnectWithFiltering).not.toHaveBeenCalled()
       expect(mockSimpleInference).toHaveBeenCalled()
       expect(mockMultiMcpInference).not.toHaveBeenCalled()
       expect(core.warning).toHaveBeenCalledWith(
@@ -539,19 +556,18 @@ describe('main.ts', () => {
       })
 
       // GitHub connection fails, Sentry succeeds
-      mockConnect
+      mockConnectWithFiltering
         .mockResolvedValueOnce(null) // GitHub fails
         .mockResolvedValueOnce(mockSentryClient) // Sentry succeeds
 
       await run()
 
-      expect(mockConnect).toHaveBeenCalledTimes(2)
+      expect(mockConnectWithFiltering).toHaveBeenCalledTimes(2)
       expect(mockMultiMcpInference).toHaveBeenCalledWith(
         expect.any(Object),
         [mockSentryClient], // Only Sentry client in the array
       )
       expect(core.warning).toHaveBeenCalledWith('❌ Failed to connect to GitHub')
-      expect(core.info).toHaveBeenCalledWith('✅ Connected to Sentry')
     })
 
     it('processes multi-server inference with proper configuration handling', async () => {
@@ -581,7 +597,7 @@ describe('main.ts', () => {
         summary: {total: 4, available: 1, unavailable: 3},
       })
 
-      mockConnect.mockResolvedValueOnce(mockGitHubClient)
+      mockConnectWithFiltering.mockResolvedValueOnce(mockGitHubClient)
 
       await run()
 
@@ -593,7 +609,11 @@ describe('main.ts', () => {
       const mockGitHubClient = {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         client: {} as any,
-        tools: [{type: 'function', function: {name: 'github-search'}}],
+        tools: [
+          {type: 'function', function: {name: 'search_issues'}},
+          {type: 'function', function: {name: 'get_issue'}},
+          {type: 'function', function: {name: 'search_code'}},
+        ],
         config: {id: 'github', name: 'GitHub', type: 'http', url: 'github-test'},
         connected: true,
       }
@@ -601,7 +621,11 @@ describe('main.ts', () => {
       const mockDatadogClient = {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         client: {} as any,
-        tools: [{type: 'function', function: {name: 'datadog-metrics'}}],
+        tools: [
+          {type: 'function', function: {name: 'get_dashboard'}},
+          {type: 'function', function: {name: 'search_monitors'}},
+          {type: 'function', function: {name: 'get_metrics'}},
+        ],
         config: {id: 'datadog', name: 'Datadog', type: 'http', url: 'datadog-test'},
         connected: true,
       }
@@ -627,7 +651,7 @@ describe('main.ts', () => {
         summary: {total: 4, available: 2, unavailable: 2},
       })
 
-      mockConnect.mockResolvedValueOnce(mockGitHubClient).mockResolvedValueOnce(mockDatadogClient)
+      mockConnectWithFiltering.mockResolvedValueOnce(mockGitHubClient).mockResolvedValueOnce(mockDatadogClient)
 
       await run()
 

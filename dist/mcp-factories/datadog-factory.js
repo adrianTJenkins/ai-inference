@@ -1,4 +1,4 @@
-import { MCPServerFactory } from './base.js';
+import { MCPServerFactory } from './server-factory.js';
 /**
  * Datadog MCP Server Factory
  */
@@ -8,6 +8,9 @@ export class DatadogMCPFactory extends MCPServerFactory {
     }
     getName() {
         return 'Datadog MCP';
+    }
+    getAllowedTools() {
+        return ['get_datadog_metric', 'search_datadog_monitors'];
     }
     isCredentialsValid(credentials) {
         return !!credentials.apiKey && !!credentials.appKey;
