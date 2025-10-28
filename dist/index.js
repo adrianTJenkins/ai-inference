@@ -43826,7 +43826,7 @@ class SentryMCPFactory extends MCPServerFactory {
         return 'Sentry MCP';
     }
     getAllowedTools() {
-        return ['get_issue_details', 'search_issues'];
+        return ['search_events', 'get_trace_details'];
     }
     isCredentialsValid(credentials) {
         return !!credentials.token;

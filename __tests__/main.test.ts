@@ -112,7 +112,7 @@ class MockMCPServerRegistry {
       github: ['search_issues', 'get_issue', 'search_code'],
       datadog: ['get_datadog_metric', 'search_datadog_monitors'],
       azure: ['kusto'],
-      sentry: ['get_issue_details', 'search_issues'],
+      sentry: ['search_events', 'get_trace_details'],
     }
     return {
       getAllowedTools: () => toolMap[serverId as keyof typeof toolMap] || ['search_issues', 'get_issue', 'search_code'],
