@@ -14,7 +14,7 @@ export class SentryMCPFactory extends MCPServerFactory {
   }
 
   getAllowedTools(): string[] {
-    return ['get_issue_details', 'search_issues']
+    return ['search_events', 'get_trace_details']
   }
 
   isCredentialsValid(credentials: MCPServerCredentials): boolean {
