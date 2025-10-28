@@ -10,7 +10,7 @@ export class AzureMCPFactory extends MCPServerFactory {
         return 'Azure MCP';
     }
     getAllowedTools() {
-        return ['execute_kql', 'get_resource_logs'];
+        return ['kusto'];
     }
     isCredentialsValid(credentials) {
         // Azure MCP requires Service Principal authentication

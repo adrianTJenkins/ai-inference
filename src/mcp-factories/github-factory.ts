@@ -14,7 +14,7 @@ export class GitHubMCPFactory extends MCPServerFactory {
   }
 
   getAllowedTools(): string[] {
-    return ['search_issues', 'get_issue', 'list_files']
+    return ['search_issues', 'get_issue', 'search_code']
   }
 
   isCredentialsValid(credentials: MCPServerCredentials): boolean {

@@ -14,7 +14,7 @@ export class AzureMCPFactory extends MCPServerFactory {
   }
 
   getAllowedTools(): string[] {
-    return ['execute_kql', 'get_resource_logs']
+    return ['kusto']
   }
 
   isCredentialsValid(credentials: MCPServerCredentials): boolean {

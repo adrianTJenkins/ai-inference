@@ -14,7 +14,7 @@ export class DatadogMCPFactory extends MCPServerFactory {
   }
 
   getAllowedTools(): string[] {
-    return ['get_dashboard', 'search_monitors', 'get_metrics']
+    return ['get_datadog_metric', 'search_datadog_monitors']
   }
 
   isCredentialsValid(credentials: MCPServerCredentials): boolean {

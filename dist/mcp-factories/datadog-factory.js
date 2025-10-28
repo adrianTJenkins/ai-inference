@@ -10,7 +10,7 @@ export class DatadogMCPFactory extends MCPServerFactory {
         return 'Datadog MCP';
     }
     getAllowedTools() {
-        return ['get_dashboard', 'search_monitors', 'get_metrics'];
+        return ['get_datadog_metric', 'search_datadog_monitors'];
     }
     isCredentialsValid(credentials) {
         return !!credentials.apiKey && !!credentials.appKey;

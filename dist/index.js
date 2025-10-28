@@ -43793,7 +43793,7 @@ class GitHubMCPFactory extends MCPServerFactory {
         return 'GitHub MCP';
     }
     getAllowedTools() {
-        return ['search_issues', 'get_issue', 'list_files'];
+        return ['search_issues', 'get_issue', 'search_code'];
     }
     isCredentialsValid(credentials) {
         return !!credentials.token;
@@ -43826,7 +43826,7 @@ class SentryMCPFactory extends MCPServerFactory {
         return 'Sentry MCP';
     }
     getAllowedTools() {
-        return ['get_issue_details', 'search_errors'];
+        return ['get_issue_details', 'search_issues'];
     }
     isCredentialsValid(credentials) {
         return !!credentials.token;
@@ -43861,7 +43861,7 @@ class DatadogMCPFactory extends MCPServerFactory {
         return 'Datadog MCP';
     }
     getAllowedTools() {
-        return ['get_dashboard', 'search_monitors', 'get_metrics'];
+        return ['get_datadog_metric', 'search_datadog_monitors'];
     }
     isCredentialsValid(credentials) {
         return !!credentials.apiKey && !!credentials.appKey;
@@ -43893,7 +43893,7 @@ class AzureMCPFactory extends MCPServerFactory {
         return 'Azure MCP';
     }
     getAllowedTools() {
-        return ['execute_kql', 'get_resource_logs'];
+        return ['kusto'];
     }
     isCredentialsValid(credentials) {
         // Azure MCP requires Service Principal authentication

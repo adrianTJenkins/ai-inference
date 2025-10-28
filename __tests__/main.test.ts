@@ -109,13 +109,13 @@ class MockMCPServerRegistry {
   hasMinimumServers = vi.fn().mockReturnValue(true)
   getFactory = vi.fn().mockImplementation((serverId: string) => {
     const toolMap = {
-      github: ['search_issues', 'get_issue', 'list_files'],
-      datadog: ['get_dashboard', 'search_monitors', 'get_metrics'],
-      azure: ['execute_kql', 'get_resource_logs'],
-      sentry: ['get_issue_details', 'search_errors'],
+      github: ['search_issues', 'get_issue', 'search_code'],
+      datadog: ['get_datadog_metric', 'search_datadog_monitors'],
+      azure: ['kusto'],
+      sentry: ['get_issue_details', 'search_issues'],
     }
     return {
-      getAllowedTools: () => toolMap[serverId as keyof typeof toolMap] || ['search_issues', 'get_issue', 'list_files'],
+      getAllowedTools: () => toolMap[serverId as keyof typeof toolMap] || ['search_issues', 'get_issue', 'search_code'],
     }
   })
 }
@@ -494,7 +494,7 @@ describe('main.ts', () => {
           type: 'stdio',
           command: 'azure-mcp',
         },
-        ['execute_kql', 'get_resource_logs'],
+        ['kusto'],
       )
       expect(mockMultiMcpInference).toHaveBeenCalledWith(expect.any(Object), [mockAzureClient])
     })
@@ -612,7 +612,7 @@ describe('main.ts', () => {
         tools: [
           {type: 'function', function: {name: 'search_issues'}},
           {type: 'function', function: {name: 'get_issue'}},
-          {type: 'function', function: {name: 'list_files'}},
+          {type: 'function', function: {name: 'search_code'}},
         ],
         config: {id: 'github', name: 'GitHub', type: 'http', url: 'github-test'},
         connected: true,
