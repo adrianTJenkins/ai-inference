@@ -62,41 +62,6 @@ inputs:
     description: Path to MCP configuration file (defaults to .github/.mcp.json)
     required: false
     default: ''
-  github-mcp-token:
-    description: '[DEPRECATED] Use environment variables in .mcp.json instead. The token to use for GitHub MCP server.'
-    required: false
-    default: ''
-    deprecationMessage: 'Use .mcp.json configuration file with environment variables instead'
-  sentry-token:
-    description: '[DEPRECATED] Use environment variables in .mcp.json instead. The token to use for Sentry MCP server.'
-    required: false
-    default: ''
-    deprecationMessage: 'Use .mcp.json configuration file with environment variables instead'
-  datadog-api-key:
-    description: '[DEPRECATED] Use environment variables in .mcp.json instead. The API key to use for Datadog MCP server.'
-    required: false
-    default: ''
-    deprecationMessage: 'Use .mcp.json configuration file with environment variables instead'
-  datadog-app-key:
-    description: '[DEPRECATED] Use environment variables in .mcp.json instead. The application key to use for Datadog MCP server.'
-    required: false
-    default: ''
-    deprecationMessage: 'Use .mcp.json configuration file with environment variables instead'
-  azure-client-id:
-    description: '[DEPRECATED] Use environment variables in .mcp.json instead. The client ID for Azure Service Principal authentication.'
-    required: false
-    default: ''
-    deprecationMessage: 'Use .mcp.json configuration file with environment variables instead'
-  azure-client-secret:
-    description: '[DEPRECATED] Use environment variables in .mcp.json instead. The client secret for Azure Service Principal authentication.'
-    required: false
-    default: ''
-    deprecationMessage: 'Use .mcp.json configuration file with environment variables instead'
-  azure-tenant-id:
-    description: '[DEPRECATED] Use environment variables in .mcp.json instead. The tenant ID for Azure Service Principal authentication.'
-    required: false
-    default: ''
-    deprecationMessage: 'Use .mcp.json configuration file with environment variables instead'
 
 # Define your outputs here.
 outputs:
