@@ -101,6 +101,8 @@ const mockConnect = vi.fn() as MockedFunction<any>
 const mockConnectWithFiltering = vi.fn() as MockedFunction<any>
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const mockRegister = vi.fn() as MockedFunction<any>
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const mockLoadMCPConfig = vi.fn() as MockedFunction<any>
 
 // Mock the registry class with all needed methods
 class MockMCPServerRegistry {
@@ -128,6 +130,10 @@ vi.mock('../src/mcp.js', () => ({
   AzureMCPFactory: vi.fn(),
   connectToMCPServer: mockConnect,
   connectToMCPServerWithFiltering: mockConnectWithFiltering,
+}))
+
+vi.mock('../src/mcp-config.js', () => ({
+  loadMCPConfig: mockLoadMCPConfig,
 }))
 
 vi.mock('../src/inference.js', () => ({
@@ -159,6 +165,9 @@ describe('main.ts', () => {
     // Set up default mock responses
     mockSimpleInference.mockResolvedValue('Hello, user!')
     mockMultiMcpInference.mockResolvedValue('Hello, user!')
+
+    // By default, return empty config (no MCP servers configured)
+    mockLoadMCPConfig.mockReturnValue([])
   })
 
   it('Sets the response output', async () => {
@@ -226,19 +235,15 @@ describe('main.ts', () => {
       'enable-github-mcp': 'true',
     })
 
-    // Mock the registry to return one connected server
-    mockCreateConfigsWithAvailability.mockReturnValue({
-      available: [{id: 'github', name: 'GitHub', type: 'http', url: 'test'}],
-      unavailable: [],
-      summary: {total: 1, available: 1, unavailable: 0},
-    })
+    // Mock loadMCPConfig to return a server configuration
+    mockLoadMCPConfig.mockReturnValue([{id: 'github', name: 'GitHub', type: 'http', url: 'test'}])
 
     // Mock the connection to return the client
-    mockConnectWithFiltering.mockResolvedValue(mockMcpClient)
+    mockConnect.mockResolvedValue(mockMcpClient)
 
     await run()
 
-    expect(mockCreateConfigsWithAvailability).toHaveBeenCalledWith(expect.any(Map))
+    expect(mockLoadMCPConfig).toHaveBeenCalled()
     expect(mockMultiMcpInference).toHaveBeenCalledWith(
       expect.objectContaining({
         messages: [
@@ -261,16 +266,15 @@ describe('main.ts', () => {
       'enable-github-mcp': 'true',
     })
 
-    // Mock the registry to return no connected servers
-    mockCreateConfigsWithAvailability.mockReturnValue({
-      available: [],
-      unavailable: [{serverId: 'github', reason: 'Connection failed'}],
-      summary: {total: 1, available: 0, unavailable: 1},
-    })
+    // Mock loadMCPConfig to return a server configuration
+    mockLoadMCPConfig.mockReturnValue([{id: 'github', name: 'GitHub', type: 'http', url: 'test'}])
+
+    // Mock the connection to fail
+    mockConnect.mockResolvedValue(null)
 
     await run()
 
-    expect(mockCreateConfigsWithAvailability).toHaveBeenCalledWith(expect.any(Map))
+    expect(mockLoadMCPConfig).toHaveBeenCalled()
     expect(mockSimpleInference).toHaveBeenCalled()
     expect(mockMultiMcpInference).not.toHaveBeenCalled()
     expect(core.warning).toHaveBeenCalledWith(
@@ -390,25 +394,19 @@ describe('main.ts', () => {
         prompt: 'Hello, AI!',
         'system-prompt': 'You are a test assistant.',
         'enable-mcp': 'true',
-        'github-mcp-token': 'github-token',
-        'sentry-token': 'sentry-token',
       })
 
-      mockCreateConfigsWithAvailability.mockReturnValue({
-        available: [
-          {id: 'github', name: 'GitHub', type: 'http', url: 'github-test'},
-          {id: 'sentry', name: 'Sentry', type: 'http', url: 'sentry-test'},
-        ],
-        unavailable: [],
-        summary: {total: 2, available: 2, unavailable: 0},
-      })
+      mockLoadMCPConfig.mockReturnValue([
+        {id: 'github', name: 'GitHub', type: 'http', url: 'github-test'},
+        {id: 'sentry', name: 'Sentry', type: 'http', url: 'sentry-test'},
+      ])
 
-      mockConnectWithFiltering.mockResolvedValueOnce(mockGitHubClient).mockResolvedValueOnce(mockSentryClient)
+      mockConnect.mockResolvedValueOnce(mockGitHubClient).mockResolvedValueOnce(mockSentryClient)
 
       await run()
 
-      expect(mockCreateConfigsWithAvailability).toHaveBeenCalledWith(expect.any(Map))
-      expect(mockConnectWithFiltering).toHaveBeenCalledTimes(2)
+      expect(mockLoadMCPConfig).toHaveBeenCalled()
+      expect(mockConnect).toHaveBeenCalledTimes(2)
       expect(mockMultiMcpInference).toHaveBeenCalledWith(
         expect.objectContaining({
           messages: [
@@ -435,24 +433,20 @@ describe('main.ts', () => {
         prompt: 'Monitor the system',
         'system-prompt': 'You are a monitoring assistant.',
         'enable-mcp': 'true',
-        'datadog-api-key': 'dd-api-key',
-        'datadog-app-key': 'dd-app-key',
-        'azure-client-id': 'azure-id',
-        // Missing azure-client-secret and azure-tenant-id
       })
 
-      mockCreateConfigsWithAvailability.mockReturnValue({
-        available: [{id: 'datadog', name: 'Datadog', type: 'http', url: 'datadog-test'}],
-        unavailable: [{serverId: 'azure', reason: 'Missing credentials: clientSecret, tenantId'}],
-        summary: {total: 2, available: 1, unavailable: 1},
-      })
+      mockLoadMCPConfig.mockReturnValue([
+        {id: 'datadog', name: 'Datadog', type: 'http', url: 'datadog-test'},
+        {id: 'azure', name: 'Azure', type: 'stdio', command: 'azure-mcp'},
+      ])
 
-      mockConnectWithFiltering.mockResolvedValueOnce(mockDatadogClient)
+      // Datadog succeeds, Azure fails
+      mockConnect.mockResolvedValueOnce(mockDatadogClient).mockResolvedValueOnce(null)
 
       await run()
 
-      expect(mockCreateConfigsWithAvailability).toHaveBeenCalledWith(expect.any(Map))
-      expect(mockConnectWithFiltering).toHaveBeenCalledTimes(1)
+      expect(mockLoadMCPConfig).toHaveBeenCalled()
+      expect(mockConnect).toHaveBeenCalledTimes(2)
       expect(mockMultiMcpInference).toHaveBeenCalledWith(expect.any(Object), [mockDatadogClient])
       expect(mockSimpleInference).not.toHaveBeenCalled()
       verifyStandardResponse()
@@ -471,32 +465,24 @@ describe('main.ts', () => {
         prompt: 'List Azure resources',
         'system-prompt': 'You are an Azure assistant.',
         'enable-mcp': 'true',
-        'azure-client-id': 'azure-client-id',
-        'azure-client-secret': 'azure-client-secret',
-        'azure-tenant-id': 'azure-tenant-id',
       })
 
-      mockCreateConfigsWithAvailability.mockReturnValue({
-        available: [{id: 'azure', name: 'Azure', type: 'stdio', command: 'azure-mcp'}],
-        unavailable: [],
-        summary: {total: 1, available: 1, unavailable: 0},
-      })
+      mockLoadMCPConfig.mockReturnValue([{id: 'azure', name: 'Azure', type: 'stdio', command: 'azure-mcp'}])
 
-      mockConnectWithFiltering.mockResolvedValueOnce(mockAzureClient)
+      mockConnect.mockResolvedValueOnce(mockAzureClient)
 
       await run()
 
-      expect(mockCreateConfigsWithAvailability).toHaveBeenCalledWith(expect.any(Map))
-      expect(mockConnectWithFiltering).toHaveBeenCalledWith(
-        {
-          id: 'azure',
-          name: 'Azure',
-          type: 'stdio',
-          command: 'azure-mcp',
-        },
-        ['kusto'],
-      )
+      expect(mockLoadMCPConfig).toHaveBeenCalled()
+      expect(mockConnect).toHaveBeenCalledWith({
+        id: 'azure',
+        name: 'Azure',
+        type: 'stdio',
+        command: 'azure-mcp',
+      })
       expect(mockMultiMcpInference).toHaveBeenCalledWith(expect.any(Object), [mockAzureClient])
+      expect(mockSimpleInference).not.toHaveBeenCalled()
+      verifyStandardResponse()
     })
 
     it('falls back when all servers are unavailable due to missing credentials', async () => {
@@ -507,25 +493,16 @@ describe('main.ts', () => {
         // No credentials provided for any server
       })
 
-      mockCreateConfigsWithAvailability.mockReturnValue({
-        available: [],
-        unavailable: [
-          {serverId: 'github', reason: 'No token provided'},
-          {serverId: 'sentry', reason: 'No token provided'},
-          {serverId: 'datadog', reason: 'Missing credentials: apiKey, appKey'},
-          {serverId: 'azure', reason: 'Missing credentials: clientId, clientSecret, tenantId'},
-        ],
-        summary: {total: 4, available: 0, unavailable: 4},
-      })
+      mockLoadMCPConfig.mockReturnValue([])
 
       await run()
 
-      expect(mockCreateConfigsWithAvailability).toHaveBeenCalledWith(expect.any(Map))
-      expect(mockConnectWithFiltering).not.toHaveBeenCalled()
+      expect(mockLoadMCPConfig).toHaveBeenCalled()
+      expect(mockConnect).not.toHaveBeenCalled()
       expect(mockSimpleInference).toHaveBeenCalled()
       expect(mockMultiMcpInference).not.toHaveBeenCalled()
       expect(core.warning).toHaveBeenCalledWith(
-        '⚠️ No MCP servers connected successfully, falling back to simple inference',
+        '⚠️ No MCP servers configured in .mcp.json, falling back to simple inference',
       )
     })
 
@@ -542,27 +519,21 @@ describe('main.ts', () => {
         prompt: 'Check for errors',
         'system-prompt': 'You are an error monitoring assistant.',
         'enable-mcp': 'true',
-        'github-mcp-token': 'github-token',
-        'sentry-token': 'sentry-token',
       })
 
-      mockCreateConfigsWithAvailability.mockReturnValue({
-        available: [
-          {id: 'github', name: 'GitHub', type: 'http', url: 'github-test'},
-          {id: 'sentry', name: 'Sentry', type: 'http', url: 'sentry-test'},
-        ],
-        unavailable: [],
-        summary: {total: 2, available: 2, unavailable: 0},
-      })
+      mockLoadMCPConfig.mockReturnValue([
+        {id: 'github', name: 'GitHub', type: 'http', url: 'github-test'},
+        {id: 'sentry', name: 'Sentry', type: 'http', url: 'sentry-test'},
+      ])
 
       // GitHub connection fails, Sentry succeeds
-      mockConnectWithFiltering
+      mockConnect
         .mockResolvedValueOnce(null) // GitHub fails
         .mockResolvedValueOnce(mockSentryClient) // Sentry succeeds
 
       await run()
 
-      expect(mockConnectWithFiltering).toHaveBeenCalledTimes(2)
+      expect(mockConnect).toHaveBeenCalledTimes(2)
       expect(mockMultiMcpInference).toHaveBeenCalledWith(
         expect.any(Object),
         [mockSentryClient], // Only Sentry client in the array
@@ -583,21 +554,11 @@ describe('main.ts', () => {
         prompt: 'Search repositories',
         'system-prompt': 'You are a repository assistant.',
         'enable-mcp': 'true',
-        'min-servers': '1', // Minimum requirement met
-        'github-mcp-token': 'github-token',
       })
 
-      mockCreateConfigsWithAvailability.mockReturnValue({
-        available: [{id: 'github', name: 'GitHub', type: 'http', url: 'github-test'}],
-        unavailable: [
-          {serverId: 'sentry', reason: 'No token provided'},
-          {serverId: 'datadog', reason: 'Missing credentials: apiKey, appKey'},
-          {serverId: 'azure', reason: 'Missing credentials: clientId, clientSecret, tenantId'},
-        ],
-        summary: {total: 4, available: 1, unavailable: 3},
-      })
+      mockLoadMCPConfig.mockReturnValue([{id: 'github', name: 'GitHub', type: 'http', url: 'github-test'}])
 
-      mockConnectWithFiltering.mockResolvedValueOnce(mockGitHubClient)
+      mockConnect.mockResolvedValueOnce(mockGitHubClient)
 
       await run()
 
@@ -634,30 +595,19 @@ describe('main.ts', () => {
         prompt: 'Monitor and search',
         'system-prompt': 'You are a monitoring and search assistant.',
         'enable-mcp': 'true',
-        'github-mcp-token': 'github-token',
-        'datadog-api-key': 'dd-api-key',
-        'datadog-app-key': 'dd-app-key',
       })
 
-      mockCreateConfigsWithAvailability.mockReturnValue({
-        available: [
-          {id: 'github', name: 'GitHub', type: 'http', url: 'github-test'},
-          {id: 'datadog', name: 'Datadog', type: 'http', url: 'datadog-test'},
-        ],
-        unavailable: [
-          {serverId: 'sentry', reason: 'No token provided'},
-          {serverId: 'azure', reason: 'Missing credentials: clientId, clientSecret, tenantId'},
-        ],
-        summary: {total: 4, available: 2, unavailable: 2},
-      })
+      mockLoadMCPConfig.mockReturnValue([
+        {id: 'github', name: 'GitHub', type: 'http', url: 'github-test'},
+        {id: 'datadog', name: 'Datadog', type: 'http', url: 'datadog-test'},
+      ])
 
-      mockConnectWithFiltering.mockResolvedValueOnce(mockGitHubClient).mockResolvedValueOnce(mockDatadogClient)
+      mockConnect.mockResolvedValueOnce(mockGitHubClient).mockResolvedValueOnce(mockDatadogClient)
 
       await run()
 
       expect(core.info).toHaveBeenCalledWith('🎯 Running multi-server inference with 2 connected servers')
       expect(core.info).toHaveBeenCalledWith('📊 Connected servers: GitHub, Datadog')
-      expect(core.info).toHaveBeenCalledWith('📊 Unavailable servers: sentry, azure')
       expect(mockMultiMcpInference).toHaveBeenCalledWith(expect.any(Object), [mockGitHubClient, mockDatadogClient])
     })
   })

@@ -1,23 +1,24 @@
-import require$$0 from 'os';
-import require$$0$1 from 'crypto';
+import require$$0$1 from 'os';
+import require$$0$2 from 'crypto';
 import * as fs from 'fs';
 import fs__default from 'fs';
-import require$$0$a from 'path';
+import * as require$$0 from 'path';
+import require$$0__default from 'path';
 import require$$2 from 'http';
 import require$$3 from 'https';
-import require$$0$4 from 'net';
+import require$$0$5 from 'net';
 import require$$1 from 'tls';
 import require$$4 from 'events';
-import require$$0$3 from 'assert';
-import require$$0$2 from 'util';
-import require$$0$5 from 'stream';
+import require$$0$4 from 'assert';
+import require$$0$3 from 'util';
+import require$$0$6 from 'stream';
 import require$$7 from 'buffer';
 import require$$8 from 'querystring';
 import require$$14 from 'stream/web';
-import require$$0$7, { PassThrough } from 'node:stream';
+import require$$0$8, { PassThrough } from 'node:stream';
 import require$$1$1 from 'node:util';
-import require$$0$6 from 'node:events';
-import require$$0$8 from 'worker_threads';
+import require$$0$7 from 'node:events';
+import require$$0$9 from 'worker_threads';
 import require$$2$1 from 'perf_hooks';
 import require$$5 from 'util/types';
 import require$$4$1 from 'async_hooks';
@@ -25,7 +26,7 @@ import require$$1$2 from 'console';
 import require$$1$3 from 'url';
 import require$$3$1 from 'zlib';
 import require$$6 from 'string_decoder';
-import require$$0$9 from 'diagnostics_channel';
+import require$$0$a from 'diagnostics_channel';
 import require$$2$2 from 'child_process';
 import require$$6$1 from 'timers';
 import process$1 from 'node:process';
@@ -119,7 +120,7 @@ function requireCommand () {
 	};
 	Object.defineProperty(command, "__esModule", { value: true });
 	command.issue = command.issueCommand = void 0;
-	const os = __importStar(require$$0);
+	const os = __importStar(require$$0$1);
 	const utils_1 = requireUtils$1();
 	/**
 	 * Commands
@@ -227,9 +228,9 @@ function requireFileCommand () {
 	fileCommand.prepareKeyValueMessage = fileCommand.issueFileCommand = void 0;
 	// We use any as a valid input type
 	/* eslint-disable @typescript-eslint/no-explicit-any */
-	const crypto = __importStar(require$$0$1);
+	const crypto = __importStar(require$$0$2);
 	const fs = __importStar(fs__default);
-	const os = __importStar(require$$0);
+	const os = __importStar(require$$0$1);
 	const utils_1 = requireUtils$1();
 	function issueFileCommand(command, message) {
 	    const filePath = process.env[`GITHUB_${command}`];
@@ -382,7 +383,7 @@ function requireTunnel$1 () {
 	var http = require$$2;
 	var https = require$$3;
 	var events = require$$4;
-	var util = require$$0$2;
+	var util = require$$0$3;
 
 
 	tunnel$1.httpOverHttp = httpOverHttp;
@@ -1096,14 +1097,14 @@ function requireUtil$7 () {
 	if (hasRequiredUtil$7) return util$8;
 	hasRequiredUtil$7 = 1;
 
-	const assert = require$$0$3;
+	const assert = require$$0$4;
 	const { kDestroyed, kBodyUsed } = requireSymbols$4();
 	const { IncomingMessage } = require$$2;
-	const stream = require$$0$5;
-	const net = require$$0$4;
+	const stream = require$$0$6;
+	const net = require$$0$5;
 	const { InvalidArgumentError } = requireErrors();
 	const { Blob } = require$$7;
-	const nodeUtil = require$$0$2;
+	const nodeUtil = require$$0$3;
 	const { stringify } = require$$8;
 	const { headerNameLowerCasedRecord } = requireConstants$4();
 
@@ -1759,7 +1760,7 @@ function requireSbmh () {
 	 * Based heavily on the Streaming Boyer-Moore-Horspool C++ implementation
 	 * by Hongli Lai at: https://github.com/FooBarWidget/boyer-moore-horspool
 	 */
-	const EventEmitter = require$$0$6.EventEmitter;
+	const EventEmitter = require$$0$7.EventEmitter;
 	const inherits = require$$1$1.inherits;
 
 	function SBMH (needle) {
@@ -1970,7 +1971,7 @@ function requirePartStream () {
 	hasRequiredPartStream = 1;
 
 	const inherits = require$$1$1.inherits;
-	const ReadableStream = require$$0$7.Readable;
+	const ReadableStream = require$$0$8.Readable;
 
 	function PartStream (opts) {
 	  ReadableStream.call(this, opts);
@@ -2014,7 +2015,7 @@ function requireHeaderParser () {
 	if (hasRequiredHeaderParser) return HeaderParser_1;
 	hasRequiredHeaderParser = 1;
 
-	const EventEmitter = require$$0$6.EventEmitter;
+	const EventEmitter = require$$0$7.EventEmitter;
 	const inherits = require$$1$1.inherits;
 	const getLimit = requireGetLimit();
 
@@ -2122,7 +2123,7 @@ function requireDicer () {
 	if (hasRequiredDicer) return Dicer_1;
 	hasRequiredDicer = 1;
 
-	const WritableStream = require$$0$7.Writable;
+	const WritableStream = require$$0$8.Writable;
 	const inherits = require$$1$1.inherits;
 
 	const StreamSearch = requireSbmh();
@@ -2699,7 +2700,7 @@ function requireMultipart () {
 	//  * support limits.fieldNameSize
 	//     -- this will require modifications to utils.parseParams
 
-	const { Readable } = require$$0$7;
+	const { Readable } = require$$0$8;
 	const { inherits } = require$$1$1;
 
 	const Dicer = requireDicer();
@@ -3265,7 +3266,7 @@ function requireMain () {
 	if (hasRequiredMain) return main.exports;
 	hasRequiredMain = 1;
 
-	const WritableStream = require$$0$7.Writable;
+	const WritableStream = require$$0$8.Writable;
 	const { inherits } = require$$1$1;
 	const Dicer = requireDicer();
 
@@ -3358,7 +3359,7 @@ function requireConstants$3 () {
 	if (hasRequiredConstants$3) return constants$3;
 	hasRequiredConstants$3 = 1;
 
-	const { MessageChannel, receiveMessageOnPort } = require$$0$8;
+	const { MessageChannel, receiveMessageOnPort } = require$$0$9;
 
 	const corsSafeListedMethods = ['GET', 'HEAD', 'POST'];
 	const corsSafeListedMethodsSet = new Set(corsSafeListedMethods);
@@ -3569,7 +3570,7 @@ function requireUtil$6 () {
 	const { getGlobalOrigin } = requireGlobal$1();
 	const { performance } = require$$2$1;
 	const { isBlobLike, toUSVString, ReadableStreamFrom } = requireUtil$7();
-	const assert = require$$0$3;
+	const assert = require$$0$4;
 	const { isUint8Array } = require$$5;
 
 	let supportedHashes = [];
@@ -4734,7 +4735,7 @@ function requireWebidl () {
 	if (hasRequiredWebidl) return webidl_1;
 	hasRequiredWebidl = 1;
 
-	const { types } = require$$0$2;
+	const { types } = require$$0$3;
 	const { hasOwn, toUSVString } = requireUtil$6();
 
 	/** @type {import('../../types/webidl').Webidl} */
@@ -5387,7 +5388,7 @@ var hasRequiredDataURL;
 function requireDataURL () {
 	if (hasRequiredDataURL) return dataURL;
 	hasRequiredDataURL = 1;
-	const assert = require$$0$3;
+	const assert = require$$0$4;
 	const { atob } = require$$7;
 	const { isomorphicDecode } = requireUtil$6();
 
@@ -6025,7 +6026,7 @@ function requireFile () {
 	hasRequiredFile = 1;
 
 	const { Blob, File: NativeFile } = require$$7;
-	const { types } = require$$0$2;
+	const { types } = require$$0$3;
 	const { kState } = requireSymbols$3();
 	const { isBlobLike } = requireUtil$6();
 	const { webidl } = requireWebidl();
@@ -6665,7 +6666,7 @@ function requireBody () {
 	const { DOMException, structuredClone } = requireConstants$3();
 	const { Blob, File: NativeFile } = require$$7;
 	const { kBodyUsed } = requireSymbols$4();
-	const assert = require$$0$3;
+	const assert = require$$0$4;
 	const { isErrored } = requireUtil$7();
 	const { isUint8Array, isArrayBuffer } = require$$5;
 	const { File: UndiciFile } = requireFile();
@@ -7274,7 +7275,7 @@ function requireRequest$1 () {
 	  InvalidArgumentError,
 	  NotSupportedError
 	} = requireErrors();
-	const assert = require$$0$3;
+	const assert = require$$0$4;
 	const { kHTTP2BuildRequest, kHTTP2CopyHeaders, kHTTP1BuildRequest } = requireSymbols$4();
 	const util = requireUtil$7();
 
@@ -8004,8 +8005,8 @@ function requireConnect () {
 	if (hasRequiredConnect) return connect;
 	hasRequiredConnect = 1;
 
-	const net = require$$0$4;
-	const assert = require$$0$3;
+	const net = require$$0$5;
+	const assert = require$$0$4;
 	const util = requireUtil$7();
 	const { InvalidArgumentError, ConnectTimeoutError } = requireErrors();
 
@@ -8510,7 +8511,7 @@ function requireRedirectHandler () {
 
 	const util = requireUtil$7();
 	const { kBodyUsed } = requireSymbols$4();
-	const assert = require$$0$3;
+	const assert = require$$0$4;
 	const { InvalidArgumentError } = requireErrors();
 	const EE = require$$4;
 
@@ -8770,10 +8771,10 @@ function requireClient () {
 
 	/* global WebAssembly */
 
-	const assert = require$$0$3;
-	const net = require$$0$4;
+	const assert = require$$0$4;
+	const net = require$$0$5;
 	const http = require$$2;
-	const { pipeline } = require$$0$5;
+	const { pipeline } = require$$0$6;
 	const util = requireUtil$7();
 	const timers = requireTimers();
 	const Request = requireRequest$1();
@@ -11955,8 +11956,8 @@ function requireReadable () {
 	if (hasRequiredReadable) return readable;
 	hasRequiredReadable = 1;
 
-	const assert = require$$0$3;
-	const { Readable } = require$$0$5;
+	const assert = require$$0$4;
+	const { Readable } = require$$0$6;
 	const { RequestAbortedError, NotSupportedError, InvalidArgumentError } = requireErrors();
 	const util = requireUtil$7();
 	const { ReadableStreamFrom, toUSVString } = requireUtil$7();
@@ -12282,7 +12283,7 @@ var hasRequiredUtil$5;
 function requireUtil$5 () {
 	if (hasRequiredUtil$5) return util$6;
 	hasRequiredUtil$5 = 1;
-	const assert = require$$0$3;
+	const assert = require$$0$4;
 	const {
 	  ResponseStatusCodeError
 	} = requireErrors();
@@ -12588,7 +12589,7 @@ function requireApiStream () {
 	if (hasRequiredApiStream) return apiStream;
 	hasRequiredApiStream = 1;
 
-	const { finished, PassThrough } = require$$0$5;
+	const { finished, PassThrough } = require$$0$6;
 	const {
 	  InvalidArgumentError,
 	  InvalidReturnValueError,
@@ -12820,7 +12821,7 @@ function requireApiPipeline () {
 	  Readable,
 	  Duplex,
 	  PassThrough
-	} = require$$0$5;
+	} = require$$0$6;
 	const {
 	  InvalidArgumentError,
 	  InvalidReturnValueError,
@@ -12829,7 +12830,7 @@ function requireApiPipeline () {
 	const util = requireUtil$7();
 	const { AsyncResource } = require$$4$1;
 	const { addSignal, removeSignal } = requireAbortSignal();
-	const assert = require$$0$3;
+	const assert = require$$0$4;
 
 	const kResume = Symbol('resume');
 
@@ -13077,7 +13078,7 @@ function requireApiUpgrade () {
 	const { AsyncResource } = require$$4$1;
 	const util = requireUtil$7();
 	const { addSignal, removeSignal } = requireAbortSignal();
-	const assert = require$$0$3;
+	const assert = require$$0$4;
 
 	class UpgradeHandler extends AsyncResource {
 	  constructor (opts, callback) {
@@ -13382,7 +13383,7 @@ function requireMockUtils () {
 	  types: {
 	    isPromise
 	  }
-	} = require$$0$2;
+	} = require$$0$3;
 
 	function matchValue (match, value) {
 	  if (typeof match === 'string') {
@@ -13942,7 +13943,7 @@ function requireMockClient () {
 	if (hasRequiredMockClient) return mockClient;
 	hasRequiredMockClient = 1;
 
-	const { promisify } = require$$0$2;
+	const { promisify } = require$$0$3;
 	const Client = requireClient();
 	const { buildMockDispatch } = requireMockUtils();
 	const {
@@ -14009,7 +14010,7 @@ function requireMockPool () {
 	if (hasRequiredMockPool) return mockPool;
 	hasRequiredMockPool = 1;
 
-	const { promisify } = require$$0$2;
+	const { promisify } = require$$0$3;
 	const Pool = requirePool();
 	const { buildMockDispatch } = requireMockUtils();
 	const {
@@ -14113,7 +14114,7 @@ function requirePendingInterceptorsFormatter () {
 	if (hasRequiredPendingInterceptorsFormatter) return pendingInterceptorsFormatter;
 	hasRequiredPendingInterceptorsFormatter = 1;
 
-	const { Transform } = require$$0$5;
+	const { Transform } = require$$0$6;
 	const { Console } = require$$1$2;
 
 	/**
@@ -14536,7 +14537,7 @@ var hasRequiredRetryHandler;
 function requireRetryHandler () {
 	if (hasRequiredRetryHandler) return RetryHandler_1;
 	hasRequiredRetryHandler = 1;
-	const assert = require$$0$3;
+	const assert = require$$0$4;
 
 	const { kRetryHandlerDefaultRetry } = requireSymbols$4();
 	const { RequestRetryError } = requireErrors();
@@ -14973,9 +14974,9 @@ function requireHeaders () {
 	  isValidHeaderName,
 	  isValidHeaderValue
 	} = requireUtil$6();
-	const util = require$$0$2;
+	const util = require$$0$3;
 	const { webidl } = requireWebidl();
-	const assert = require$$0$3;
+	const assert = require$$0$4;
 
 	const kHeadersMap = Symbol('headers map');
 	const kHeadersSortedMap = Symbol('headers map sorted');
@@ -15581,8 +15582,8 @@ function requireResponse () {
 	const { getGlobalOrigin } = requireGlobal$1();
 	const { URLSerializer } = requireDataURL();
 	const { kHeadersList, kConstruct } = requireSymbols$4();
-	const assert = require$$0$3;
-	const { types } = require$$0$2;
+	const assert = require$$0$4;
+	const { types } = require$$0$3;
 
 	const ReadableStream = globalThis.ReadableStream || require$$14.ReadableStream;
 	const textEncoder = new TextEncoder('utf-8');
@@ -16165,7 +16166,7 @@ function requireRequest () {
 	const { getGlobalOrigin } = requireGlobal$1();
 	const { URLSerializer } = requireDataURL();
 	const { kHeadersList, kConstruct } = requireSymbols$4();
-	const assert = require$$0$3;
+	const assert = require$$0$4;
 	const { getMaxListeners, setMaxListeners, getEventListeners, defaultMaxListeners } = require$$4;
 
 	let TransformStream = globalThis.TransformStream;
@@ -17131,7 +17132,7 @@ function requireFetch () {
 	  urlHasHttpsScheme
 	} = requireUtil$6();
 	const { kState, kHeaders, kGuard, kRealm } = requireSymbols$3();
-	const assert = require$$0$3;
+	const assert = require$$0$4;
 	const { safelyExtractBody } = requireBody();
 	const {
 	  redirectStatusSet,
@@ -17143,7 +17144,7 @@ function requireFetch () {
 	} = requireConstants$3();
 	const { kHeadersList } = requireSymbols$4();
 	const EE = require$$4;
-	const { Readable, pipeline } = require$$0$5;
+	const { Readable, pipeline } = require$$0$6;
 	const { addAbortListener, isErrored, isReadable, nodeMajor, nodeMinor } = requireUtil$7();
 	const { dataURLProcessor, serializeAMimeType } = requireDataURL();
 	const { TransformStream } = require$$14;
@@ -19583,7 +19584,7 @@ function requireUtil$4 () {
 	const { getEncoding } = requireEncoding();
 	const { DOMException } = requireConstants$3();
 	const { serializeAMimeType, parseMIMEType } = requireDataURL();
-	const { types } = require$$0$2;
+	const { types } = require$$0$3;
 	const { StringDecoder } = require$$6;
 	const { btoa } = require$$7;
 
@@ -20337,7 +20338,7 @@ function requireUtil$3 () {
 	if (hasRequiredUtil$3) return util$4;
 	hasRequiredUtil$3 = 1;
 
-	const assert = require$$0$3;
+	const assert = require$$0$4;
 	const { URLSerializer } = requireDataURL();
 	const { isValidHeaderName } = requireUtil$6();
 
@@ -20404,7 +20405,7 @@ function requireCache$1 () {
 	const { kState, kHeaders, kGuard, kRealm } = requireSymbols$3();
 	const { fetching } = requireFetch();
 	const { urlIsHttpHttpsScheme, createDeferredPromise, readAllBytes } = requireUtil$6();
-	const assert = require$$0$3;
+	const assert = require$$0$4;
 	const { getGlobalDispatcher } = requireGlobal();
 
 	/**
@@ -21697,7 +21698,7 @@ function requireParse$1 () {
 	const { maxNameValuePairSize, maxAttributeValueSize } = requireConstants$1();
 	const { isCTLExcludingHtab } = requireUtil$2();
 	const { collectASequenceOfCodePointsFast } = requireDataURL();
-	const assert = require$$0$3;
+	const assert = require$$0$4;
 
 	/**
 	 * @description Parses the field-value attributes of a set-cookie header string.
@@ -22291,7 +22292,7 @@ function requireEvents () {
 
 	const { webidl } = requireWebidl();
 	const { kEnumerableProperty } = requireUtil$7();
-	const { MessagePort } = require$$0$8;
+	const { MessagePort } = require$$0$9;
 
 	/**
 	 * @see https://html.spec.whatwg.org/multipage/comms.html#messageevent
@@ -22808,7 +22809,7 @@ function requireConnection () {
 	if (hasRequiredConnection) return connection;
 	hasRequiredConnection = 1;
 
-	const diagnosticsChannel = require$$0$9;
+	const diagnosticsChannel = require$$0$a;
 	const { uid, states } = requireConstants();
 	const {
 	  kReadyState,
@@ -23188,8 +23189,8 @@ function requireReceiver () {
 	if (hasRequiredReceiver) return receiver;
 	hasRequiredReceiver = 1;
 
-	const { Writable } = require$$0$5;
-	const diagnosticsChannel = require$$0$9;
+	const { Writable } = require$$0$6;
+	const diagnosticsChannel = require$$0$a;
 	const { parserStates, opcodes, states, emptyBuffer } = requireConstants();
 	const { kReadyState, kSentClose, kResponse, kReceivedClose } = requireSymbols();
 	const { isValidStatusCode, failWebsocketConnection, websocketMessageReceived } = requireUtil$1();
@@ -23560,7 +23561,7 @@ function requireWebsocket () {
 	const { ByteParser } = requireReceiver();
 	const { kEnumerableProperty, isBlobLike } = requireUtil$7();
 	const { getGlobalDispatcher } = requireGlobal();
-	const { types } = require$$0$2;
+	const { types } = require$$0$3;
 
 	let experimentalWarned = false;
 
@@ -25205,7 +25206,7 @@ function requireSummary () {
 		};
 		Object.defineProperty(exports, "__esModule", { value: true });
 		exports.summary = exports.markdownSummary = exports.SUMMARY_DOCS_URL = exports.SUMMARY_ENV_VAR = void 0;
-		const os_1 = require$$0;
+		const os_1 = require$$0$1;
 		const fs_1 = fs__default;
 		const { access, appendFile, writeFile } = fs_1.promises;
 		exports.SUMMARY_ENV_VAR = 'GITHUB_STEP_SUMMARY';
@@ -25512,7 +25513,7 @@ function requirePathUtils () {
 	};
 	Object.defineProperty(pathUtils, "__esModule", { value: true });
 	pathUtils.toPlatformPath = pathUtils.toWin32Path = pathUtils.toPosixPath = void 0;
-	const path = __importStar(require$$0$a);
+	const path = __importStar(require$$0__default);
 	/**
 	 * toPosixPath converts the given path to the posix form. On Windows, \\ will be
 	 * replaced with /.
@@ -25599,7 +25600,7 @@ function requireIoUtil () {
 		Object.defineProperty(exports, "__esModule", { value: true });
 		exports.getCmdPath = exports.tryGetExecutablePath = exports.isRooted = exports.isDirectory = exports.exists = exports.READONLY = exports.UV_FS_O_EXLOCK = exports.IS_WINDOWS = exports.unlink = exports.symlink = exports.stat = exports.rmdir = exports.rm = exports.rename = exports.readlink = exports.readdir = exports.open = exports.mkdir = exports.lstat = exports.copyFile = exports.chmod = void 0;
 		const fs = __importStar(fs__default);
-		const path = __importStar(require$$0$a);
+		const path = __importStar(require$$0__default);
 		_a = fs.promises
 		// export const {open} = 'fs'
 		, exports.chmod = _a.chmod, exports.copyFile = _a.copyFile, exports.lstat = _a.lstat, exports.mkdir = _a.mkdir, exports.open = _a.open, exports.readdir = _a.readdir, exports.readlink = _a.readlink, exports.rename = _a.rename, exports.rm = _a.rm, exports.rmdir = _a.rmdir, exports.stat = _a.stat, exports.symlink = _a.symlink, exports.unlink = _a.unlink;
@@ -25788,8 +25789,8 @@ function requireIo () {
 	};
 	Object.defineProperty(io, "__esModule", { value: true });
 	io.findInPath = io.which = io.mkdirP = io.rmRF = io.mv = io.cp = void 0;
-	const assert_1 = require$$0$3;
-	const path = __importStar(require$$0$a);
+	const assert_1 = require$$0$4;
+	const path = __importStar(require$$0__default);
 	const ioUtil = __importStar(requireIoUtil());
 	/**
 	 * Copies a file or folder.
@@ -26094,10 +26095,10 @@ function requireToolrunner () {
 	};
 	Object.defineProperty(toolrunner, "__esModule", { value: true });
 	toolrunner.argStringToArray = toolrunner.ToolRunner = void 0;
-	const os = __importStar(require$$0);
+	const os = __importStar(require$$0$1);
 	const events = __importStar(require$$4);
 	const child = __importStar(require$$2$2);
-	const path = __importStar(require$$0$a);
+	const path = __importStar(require$$0__default);
 	const io = __importStar(requireIo());
 	const ioUtil = __importStar(requireIoUtil());
 	const timers_1 = require$$6$1;
@@ -26837,7 +26838,7 @@ function requirePlatform () {
 		};
 		Object.defineProperty(exports, "__esModule", { value: true });
 		exports.getDetails = exports.isLinux = exports.isMacOS = exports.isWindows = exports.arch = exports.platform = void 0;
-		const os_1 = __importDefault(require$$0);
+		const os_1 = __importDefault(require$$0$1);
 		const exec = __importStar(requireExec());
 		const getWindowsInfo = () => __awaiter(void 0, void 0, void 0, function* () {
 		    const { stdout: version } = yield exec.getExecOutput('powershell -command "(Get-CimInstance -ClassName Win32_OperatingSystem).Version"', undefined, {
@@ -26940,8 +26941,8 @@ function requireCore () {
 		const command_1 = requireCommand();
 		const file_command_1 = requireFileCommand();
 		const utils_1 = requireUtils$1();
-		const os = __importStar(require$$0);
-		const path = __importStar(require$$0$a);
+		const os = __importStar(require$$0$1);
+		const path = __importStar(require$$0__default);
 		const oidc_utils_1 = requireOidcUtils();
 		/**
 		 * The code to exit an action
@@ -27272,9 +27273,9 @@ function requireTmp () {
 		 * Module dependencies.
 		 */
 		const fs = fs__default;
-		const os = require$$0;
-		const path = require$$0$a;
-		const crypto = require$$0$1;
+		const os = require$$0$1;
+		const path = require$$0__default;
+		const crypto = require$$0$2;
 		const _c = { fs: fs.constants, os: os.constants };
 
 		/*
@@ -42893,7 +42894,7 @@ function requireWhich () {
 	    process.env.OSTYPE === 'cygwin' ||
 	    process.env.OSTYPE === 'msys';
 
-	const path = require$$0$a;
+	const path = require$$0__default;
 	const COLON = isWindows ? ';' : ':';
 	const isexe = requireIsexe();
 
@@ -43049,7 +43050,7 @@ function requireResolveCommand () {
 	if (hasRequiredResolveCommand) return resolveCommand_1;
 	hasRequiredResolveCommand = 1;
 
-	const path = require$$0$a;
+	const path = require$$0__default;
 	const which = requireWhich();
 	const getPathKey = requirePathKey();
 
@@ -43233,7 +43234,7 @@ function requireParse () {
 	if (hasRequiredParse) return parse_1;
 	hasRequiredParse = 1;
 
-	const path = require$$0$a;
+	const path = require$$0__default;
 	const resolveCommand = requireResolveCommand();
 	const escape = require_escape();
 	const readShebang = requireReadShebang();
@@ -43644,288 +43645,10 @@ function isElectron() {
 }
 
 /**
- * Abstract factory for creating MCP server configurations
+ * Generic function to connect to any MCP server based on configuration
  */
-class MCPServerFactory {
-    validateCredentials(credentials, requiredFields) {
-        for (const field of requiredFields) {
-            if (!credentials[field]) {
-                throw new Error(`${this.getName()} requires ${field}`);
-            }
-        }
-    }
-}
-/**
- * Registry for managing MCP server factories
- */
-class MCPServerRegistry {
-    factories = new Map();
-    register(factory) {
-        this.factories.set(factory.getId(), factory);
-    }
-    getFactory(serverId) {
-        return this.factories.get(serverId);
-    }
-    getAllFactories() {
-        return Array.from(this.factories.values());
-    }
-    /**
-     * Create server configurations with detailed availability reporting
-     */
-    createConfigsWithAvailability(credentialsMap) {
-        const available = [];
-        const unavailable = [];
-        for (const factory of this.getAllFactories()) {
-            const serverId = factory.getId();
-            const serverName = factory.getName();
-            let credentials = credentialsMap.get(serverId);
-            if (!credentials) {
-                // Check if this server requires credentials by testing with empty credentials
-                if (factory.isCredentialsValid({})) {
-                    // Server doesn't require credentials, use empty credentials
-                    credentials = {};
-                }
-                else {
-                    unavailable.push({
-                        serverId,
-                        serverName,
-                        status: 'credentials-missing',
-                        reason: `No credentials provided for ${serverName}`,
-                        lastChecked: new Date(),
-                    });
-                    continue;
-                }
-            }
-            if (!factory.isCredentialsValid(credentials)) {
-                unavailable.push({
-                    serverId,
-                    serverName,
-                    status: 'invalid-credentials',
-                    reason: `Invalid credentials for ${serverName}`,
-                    lastChecked: new Date(),
-                });
-                continue;
-            }
-            try {
-                const config = factory.createServerConfig(credentials);
-                available.push(config);
-                coreExports.info(`✅ ${serverName} server available`);
-            }
-            catch (error) {
-                unavailable.push({
-                    serverId,
-                    serverName,
-                    status: 'connection-failed',
-                    reason: `Failed to create config: ${error}`,
-                    lastChecked: new Date(),
-                });
-                coreExports.warning(`❌ Failed to configure ${serverName}: ${error}`);
-            }
-        }
-        // Sort available configs by priority
-        available.sort((a, b) => (a.priority || 999) - (b.priority || 999));
-        // Log summary
-        const summary = {
-            total: this.getAllFactories().length,
-            available: available.length,
-            unavailable: unavailable.length,
-        };
-        if (unavailable.length > 0) {
-            coreExports.info(`📊 Server availability: ${summary.available}/${summary.total} servers available. ` +
-                `Unavailable: ${unavailable.map(u => u.serverId).join(', ')}`);
-        }
-        else {
-            coreExports.info(`🎉 All ${summary.total} servers are available`);
-        }
-        return { available, unavailable, summary };
-    }
-    /**
-     * Legacy method for backward compatibility
-     * (Now wraps the enhanced method)
-     */
-    createConfigs(credentialsMap) {
-        const result = this.createConfigsWithAvailability(credentialsMap);
-        return result.available;
-    }
-    /**
-     * Get list of servers that require credentials
-     */
-    getRequiredCredentials() {
-        const requirements = new Map();
-        for (const factory of this.getAllFactories()) {
-            // This is a simple heuristic - in a real implementation,
-            // factories could expose their required credential fields
-            const serverId = factory.getId();
-            // Test with empty credentials to see what's required
-            try {
-                factory.createServerConfig({});
-            }
-            catch (error) {
-                // Parse error message to extract required fields
-                const errorMessage = error instanceof Error ? error.message : String(error);
-                if (errorMessage.includes('requires')) {
-                    // Extract field name from error like "GitHub MCP requires token"
-                    const match = errorMessage.match(/requires (\w+)/);
-                    if (match) {
-                        requirements.set(serverId, [match[1]]);
-                    }
-                }
-            }
-        }
-        return requirements;
-    }
-    /**
-     * Check if sufficient servers are available for basic operation
-     */
-    hasMinimumServers(result, minRequired = 1) {
-        return result.available.length >= minRequired;
-    }
-}
-
-/**
- * GitHub MCP Server Factory
- */
-class GitHubMCPFactory extends MCPServerFactory {
-    getId() {
-        return 'github';
-    }
-    getName() {
-        return 'GitHub MCP';
-    }
-    getAllowedTools() {
-        return ['search_issues', 'issue_read', 'search_code', 'search_pull_requests'];
-    }
-    isCredentialsValid(credentials) {
-        return !!credentials.token;
-    }
-    createServerConfig(credentials) {
-        this.validateCredentials(credentials, ['token']);
-        return {
-            id: 'github',
-            name: 'GitHub MCP',
-            type: 'http',
-            url: 'https://api.githubcopilot.com/mcp/',
-            headers: {
-                Authorization: `Bearer ${credentials.token}`,
-                'X-MCP-Readonly': 'true',
-            },
-            readonly: true,
-            priority: 1,
-        };
-    }
-}
-
-/**
- * Sentry MCP Server Factory
- */
-class SentryMCPFactory extends MCPServerFactory {
-    getId() {
-        return 'sentry';
-    }
-    getName() {
-        return 'Sentry MCP';
-    }
-    getAllowedTools() {
-        return ['search_events', 'get_trace_details'];
-    }
-    isCredentialsValid(credentials) {
-        return !!credentials.token;
-    }
-    createServerConfig(credentials) {
-        this.validateCredentials(credentials, ['token']);
-        return {
-            id: 'sentry',
-            name: 'Sentry MCP',
-            type: 'stdio',
-            command: 'npx',
-            args: ['-y', '--no-update-notifier', '@sentry/mcp-server@latest', '--host=github.sentry.io'],
-            env: {
-                SENTRY_ACCESS_TOKEN: credentials.token,
-                SENTRY_HOST: 'github.sentry.io',
-                NO_UPDATE_NOTIFIER: '1',
-                NPM_CONFIG_UPDATE_NOTIFIER: 'false',
-            },
-            priority: 2,
-        };
-    }
-}
-
-/**
- * Datadog MCP Server Factory
- */
-class DatadogMCPFactory extends MCPServerFactory {
-    getId() {
-        return 'datadog';
-    }
-    getName() {
-        return 'Datadog MCP';
-    }
-    getAllowedTools() {
-        return ['get_datadog_metric', 'search_datadog_monitors'];
-    }
-    isCredentialsValid(credentials) {
-        return !!credentials.apiKey && !!credentials.appKey;
-    }
-    createServerConfig(credentials) {
-        this.validateCredentials(credentials, ['apiKey', 'appKey']);
-        return {
-            id: 'datadog',
-            name: 'Datadog MCP',
-            type: 'http',
-            url: 'https://mcp.datadoghq.com/api/unstable/mcp-server/mcp',
-            headers: {
-                DD_API_KEY: credentials.apiKey,
-                DD_APPLICATION_KEY: credentials.appKey,
-            },
-            priority: 3,
-        };
-    }
-}
-
-/**
- * Azure MCP Server Factory
- */
-class AzureMCPFactory extends MCPServerFactory {
-    getId() {
-        return 'azure';
-    }
-    getName() {
-        return 'Azure MCP';
-    }
-    getAllowedTools() {
-        return ['kusto'];
-    }
-    isCredentialsValid(credentials) {
-        // Azure MCP requires Service Principal authentication
-        return !!(credentials.clientId && credentials.clientSecret && credentials.tenantId);
-    }
-    createServerConfig(credentials) {
-        if (!this.isCredentialsValid(credentials)) {
-            throw new Error('Azure MCP requires clientId, clientSecret, and tenantId');
-        }
-        return {
-            id: 'azure',
-            name: 'Azure MCP',
-            type: 'stdio',
-            command: 'npx',
-            args: ['-y', '--no-update-notifier', '@azure/mcp@latest', 'server', 'start'],
-            env: {
-                AZURE_CLIENT_ID: credentials.clientId,
-                AZURE_CLIENT_SECRET: credentials.clientSecret,
-                AZURE_TENANT_ID: credentials.tenantId,
-                NO_UPDATE_NOTIFIER: '1',
-                NPM_CONFIG_UPDATE_NOTIFIER: 'false',
-            },
-            priority: 4,
-        };
-    }
-}
-
-/**
- * Connect to an MCP server with tool filtering based on factory configuration
- */
-async function connectToMCPServerWithFiltering(config, allowedTools) {
-    coreExports.info(`Connecting to ${config.name} server with tool filtering...`);
+async function connectToMCPServer(config) {
+    coreExports.info(`Connecting to ${config.name} server...`);
     let transport;
     try {
         // Create transport based on server type
@@ -43972,10 +43695,8 @@ async function connectToMCPServerWithFiltering(config, allowedTools) {
         coreExports.info(`Successfully connected to ${config.name} server`);
         const toolsResponse = await client.listTools();
         coreExports.info(`Retrieved ${toolsResponse.tools?.length || 0} tools from ${config.name} server`);
-        // Filter tools based on allowed tools list
-        const filteredTools = (toolsResponse.tools || []).filter(t => allowedTools.includes(t.name));
         // Map MCP tools → Azure AI Inference tool definitions
-        const tools = filteredTools.map(t => ({
+        const tools = (toolsResponse.tools || []).map(t => ({
             type: 'function',
             function: {
                 name: t.name,
@@ -43983,7 +43704,7 @@ async function connectToMCPServerWithFiltering(config, allowedTools) {
                 parameters: t.inputSchema,
             },
         }));
-        coreExports.info(`✅ Connected to ${config.name} with ${tools.length} filtered tools: ${tools.map(t => t.function.name).join(', ')}`);
+        coreExports.info(`Mapped ${tools.length} tools from ${config.name} for Azure AI Inference`);
         return {
             config,
             client,
@@ -53873,6 +53594,134 @@ function isPromptYamlFile(filePath) {
 }
 
 /**
+ * Load MCP server configurations from .mcp.json file
+ *
+ * @param configPath - Path to the .mcp.json file (defaults to .mcp.json in workspace directory)
+ * @returns Array of MCPServerConfig objects
+ */
+function loadMCPConfig(configPath) {
+    // For GitHub Actions, look in the workspace directory (the repo using the action)
+    // Otherwise, fall back to current working directory
+    const workspaceDir = process.env.GITHUB_WORKSPACE || process.cwd();
+    const filePath = configPath || require$$0.join(workspaceDir, '.mcp.json');
+    if (!fs.existsSync(filePath)) {
+        coreExports.info(`No .mcp.json file found at ${filePath}`);
+        return [];
+    }
+    try {
+        coreExports.info(`Loading MCP configuration from ${filePath}`);
+        const fileContent = fs.readFileSync(filePath, 'utf-8');
+        const config = JSON.parse(fileContent);
+        if (!config.mcpServers || typeof config.mcpServers !== 'object') {
+            coreExports.warning('Invalid .mcp.json format: mcpServers key is missing or not an object');
+            return [];
+        }
+        // Process config with environment variable substitution
+        const processedConfig = processConfigWithEnvVars(config);
+        const serverConfigs = [];
+        let priority = 1;
+        for (const [serverName, serverConfig] of Object.entries(processedConfig.mcpServers)) {
+            try {
+                const mcpConfig = parseMCPServerConfig(serverName, serverConfig, priority);
+                serverConfigs.push(mcpConfig);
+                coreExports.info(`✅ Loaded MCP server configuration: ${serverName}`);
+                priority++;
+            }
+            catch (error) {
+                coreExports.warning(`Failed to parse MCP server config for ${serverName}: ${error}`);
+            }
+        }
+        coreExports.info(`Loaded ${serverConfigs.length} MCP server configuration(s) from ${filePath}`);
+        return serverConfigs;
+    }
+    catch (error) {
+        coreExports.warning(`Failed to load MCP configuration from ${filePath}: ${error}`);
+        return [];
+    }
+}
+/**
+ * Parse a single MCP server configuration into MCPServerConfig format
+ */
+function parseMCPServerConfig(serverName, config, priority) {
+    // Determine server type based on configuration
+    let serverType;
+    if (config.url) {
+        serverType = 'http';
+    }
+    else if (config.command) {
+        serverType = 'stdio';
+    }
+    else {
+        throw new Error(`Server ${serverName} must have either 'url' (for HTTP) or 'command' (for stdio)`);
+    }
+    // Build the server configuration
+    const serverConfig = {
+        id: serverName,
+        name: serverName,
+        type: serverType,
+        priority,
+    };
+    // Add type-specific configuration
+    if (serverType === 'http') {
+        serverConfig.url = config.url;
+        serverConfig.headers = config.headers || {};
+    }
+    else if (serverType === 'stdio') {
+        serverConfig.command = config.command;
+        serverConfig.args = config.args || [];
+        serverConfig.env = config.env || {};
+    }
+    return serverConfig;
+}
+/**
+ * Substitute environment variables in configuration values
+ * Supports ${VAR_NAME} or $VAR_NAME syntax
+ */
+function substituteEnvVars(value) {
+    return value.replace(/\$\{([^}]+)\}|\$([A-Z_][A-Z0-9_]*)/g, (match, p1, p2) => {
+        const varName = p1 || p2;
+        return process.env[varName] || match;
+    });
+}
+/**
+ * Process configuration with environment variable substitution
+ */
+function processConfigWithEnvVars(config) {
+    const processed = { mcpServers: {} };
+    for (const [serverName, serverConfig] of Object.entries(config.mcpServers)) {
+        const processedServer = {};
+        // Process command
+        if (serverConfig.command) {
+            processedServer.command = substituteEnvVars(serverConfig.command);
+        }
+        // Process args
+        if (serverConfig.args) {
+            processedServer.args = serverConfig.args.map(arg => substituteEnvVars(arg));
+        }
+        // Process env
+        if (serverConfig.env) {
+            processedServer.env = {};
+            for (const [key, value] of Object.entries(serverConfig.env)) {
+                processedServer.env[key] = substituteEnvVars(value);
+            }
+        }
+        // Process url
+        if (serverConfig.url) {
+            processedServer.url = substituteEnvVars(serverConfig.url);
+        }
+        // Process headers
+        if (serverConfig.headers) {
+            processedServer.headers = {};
+            for (const [key, value] of Object.entries(serverConfig.headers)) {
+                processedServer.headers[key] = substituteEnvVars(value);
+            }
+        }
+        processed.mcpServers[serverName] = processedServer;
+    }
+    return processed;
+}
+
+/**
  * The main function for the action.
  *
  * @returns Resolves when the action is complete.
@@ -53911,14 +53760,6 @@ async function run() {
         if (token === undefined) {
             throw new Error('GITHUB_TOKEN is not set');
         }
-        // Get GitHub MCP token (use dedicated token if provided, otherwise fall back to main token)
-        const githubMcpToken = coreExports.getInput('github-mcp-token') || token;
-        const sentryToken = coreExports.getInput('sentry-token') || process.env.SENTRY_TOKEN;
-        const datadogApiKey = coreExports.getInput('datadog-api-key') || process.env.DATADOG_API_KEY;
-        const datadogAppKey = coreExports.getInput('datadog-app-key') || process.env.DATADOG_APP_KEY;
-        const azureClientId = coreExports.getInput('azure-client-id') || process.env.AZURE_CLIENT_ID;
-        const azureClientSecret = coreExports.getInput('azure-client-secret') || process.env.AZURE_CLIENT_SECRET;
-        const azureTenantId = coreExports.getInput('azure-tenant-id') || process.env.AZURE_TENANT_ID;
         const endpoint = coreExports.getInput('endpoint');
         // Build the inference request with pre-processed messages and response format
         const inferenceRequest = buildInferenceRequest(promptConfig, systemPrompt, prompt, modelName, maxTokens, endpoint, token);
@@ -53929,74 +53770,39 @@ async function run() {
         coreExports.info(`🔍 MCP Debug: Final enableMcp=${enableMcp}`);
         let modelResponse = null;
         if (enableMcp) {
-            coreExports.info('🚀 Starting multi-server MCP setup...');
-            // Setup multi-server registry
-            const registry = new MCPServerRegistry();
-            registry.register(new GitHubMCPFactory());
-            registry.register(new SentryMCPFactory());
-            registry.register(new DatadogMCPFactory());
-            registry.register(new AzureMCPFactory());
-            // Build credentials map from collected credentials
-            const credentialsMap = new Map();
-            if (githubMcpToken) {
-                credentialsMap.set('github', { token: githubMcpToken });
-            }
-            if (sentryToken) {
-                credentialsMap.set('sentry', { token: sentryToken });
-            }
-            if (datadogApiKey && datadogAppKey) {
-                credentialsMap.set('datadog', { apiKey: datadogApiKey, appKey: datadogAppKey });
-            }
-            if (azureClientId && azureClientSecret && azureTenantId) {
-                credentialsMap.set('azure', {
-                    clientId: azureClientId,
-                    clientSecret: azureClientSecret,
-                    tenantId: azureTenantId,
-                });
-            }
-            // Get server availability and configurations
-            const { available, unavailable, summary } = registry.createConfigsWithAvailability(credentialsMap);
-            // Connect to available servers with tool filtering
-            const connectedClients = [];
-            for (const config of available) {
-                const factory = registry.getFactory(config.id);
-                if (!factory) {
-                    coreExports.warning(`❌ No factory found for ${config.name}`);
-                    continue;
-                }
-                const allowedTools = factory.getAllowedTools();
-                coreExports.info(`🔗 Connecting to ${config.name} with allowed tools: ${allowedTools.join(', ')}...`);
-                const client = await connectToMCPServerWithFiltering(config, allowedTools);
-                if (client) {
-                    connectedClients.push(client);
-                }
-                else {
-                    coreExports.warning(`❌ Failed to connect to ${config.name}`);
-                }
-            }
-            // Graceful degradation logic
-            if (connectedClients.length === 0) {
-                coreExports.warning('⚠️ No MCP servers connected successfully, falling back to simple inference');
-                if (unavailable.length > 0) {
-                    coreExports.info(`💡 Unavailable servers: ${unavailable.map(s => `${s.serverId} (${s.reason})`).join(', ')}`);
-                }
+            coreExports.info('🚀 Starting MCP setup from configuration file...');
+            // Load MCP server configurations from .mcp.json
+            const mcpConfigPath = coreExports.getInput('mcp-config-path') || undefined;
+            const serverConfigs = loadMCPConfig(mcpConfigPath);
+            if (serverConfigs.length === 0) {
+                coreExports.warning('⚠️ No MCP servers configured in .mcp.json, falling back to simple inference');
                 modelResponse = await simpleInference(inferenceRequest);
             }
             else {
-                // Check minimum server requirement (can be configured via input)
-                const minServers = parseInt(coreExports.getInput('min-servers') || '1', 10);
-                if (!registry.hasMinimumServers({ available, unavailable, summary }, minServers)) {
-                    coreExports.warning(`⚠️ Only ${connectedClients.length} servers connected, but ${minServers} required. Proceeding with available servers.`);
+                // Connect to configured servers
+                const connectedClients = [];
+                for (const config of serverConfigs) {
+                    coreExports.info(`🔗 Connecting to ${config.name}...`);
+                    const client = await connectToMCPServer(config);
+                    if (client) {
+                        connectedClients.push(client);
+                    }
+                    else {
+                        coreExports.warning(`❌ Failed to connect to ${config.name}`);
+                    }
                 }
-                coreExports.info(`🎯 Running multi-server inference with ${connectedClients.length} connected servers`);
-                // Log server status summary
-                const connectedNames = connectedClients.map(c => c.config.name).join(', ');
-                coreExports.info(`📊 Connected servers: ${connectedNames}`);
-                if (unavailable.length > 0) {
-                    const unavailableNames = unavailable.map(s => s.serverId).join(', ');
-                    coreExports.info(`📊 Unavailable servers: ${unavailableNames}`);
+                // Graceful degradation logic
+                if (connectedClients.length === 0) {
+                    coreExports.warning('⚠️ No MCP servers connected successfully, falling back to simple inference');
+                    modelResponse = await simpleInference(inferenceRequest);
                 }
-                modelResponse = await multiMcpInference(inferenceRequest, connectedClients);
+                else {
+                    coreExports.info(`🎯 Running multi-server inference with ${connectedClients.length} connected servers`);
+                    // Log server status summary
+                    const connectedNames = connectedClients.map(c => c.config.name).join(', ');
+                    coreExports.info(`📊 Connected servers: ${connectedNames}`);
+                    modelResponse = await multiMcpInference(inferenceRequest, connectedClients);
+                }
             }
         }
         else {
