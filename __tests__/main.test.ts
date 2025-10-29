@@ -109,7 +109,14 @@ class MockMCPServerRegistry {
   hasMinimumServers = vi.fn().mockReturnValue(true)
   getFactory = vi.fn().mockImplementation((serverId: string) => {
     const toolMap = {
-      github: ['search_issues', 'get_issue', 'search_code'],
+      github: [
+        'search_issues',
+        'get_issue',
+        'search_code',
+        'get_pull_request',
+        'get_pull_request_files',
+        'get_pull_request_reviews',
+      ],
       datadog: ['get_datadog_metric', 'search_datadog_monitors'],
       azure: ['kusto'],
       sentry: ['search_events', 'get_trace_details'],
