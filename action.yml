@@ -51,41 +51,52 @@ inputs:
     required: false
     default: ${{ github.token }}
   enable-github-mcp:
-    description: Enable Model Context Protocol integration with GitHub tools
+    description: Enable Model Context Protocol integration (legacy alias for enable-mcp)
     required: false
     default: 'false'
   enable-mcp:
-    description: Enable Model Context Protocol integration with all available servers
+    description: Enable Model Context Protocol integration (requires .mcp.json configuration file)
     required: false
     default: 'false'
+  mcp-config-path:
+    description: Path to MCP configuration file (defaults to .mcp.json in repository root)
+    required: false
+    default: ''
   github-mcp-token:
-    description: The token to use for GitHub MCP server (defaults to the main token if not specified). This must be a PAT for MCP to work.
+    description: '[DEPRECATED] Use environment variables in .mcp.json instead. The token to use for GitHub MCP server.'
     required: false
     default: ''
+    deprecationMessage: 'Use .mcp.json configuration file with environment variables instead'
   sentry-token:
-    description: The token to use for Sentry MCP server
+    description: '[DEPRECATED] Use environment variables in .mcp.json instead. The token to use for Sentry MCP server.'
     required: false
     default: ''
+    deprecationMessage: 'Use .mcp.json configuration file with environment variables instead'
   datadog-api-key:
-    description: The API key to use for Datadog MCP server
+    description: '[DEPRECATED] Use environment variables in .mcp.json instead. The API key to use for Datadog MCP server.'
     required: false
     default: ''
+    deprecationMessage: 'Use .mcp.json configuration file with environment variables instead'
   datadog-app-key:
-    description: The application key to use for Datadog MCP server
+    description: '[DEPRECATED] Use environment variables in .mcp.json instead. The application key to use for Datadog MCP server.'
     required: false
     default: ''
+    deprecationMessage: 'Use .mcp.json configuration file with environment variables instead'
   azure-client-id:
-    description: The client ID for Azure Service Principal authentication
+    description: '[DEPRECATED] Use environment variables in .mcp.json instead. The client ID for Azure Service Principal authentication.'
     required: false
     default: ''
+    deprecationMessage: 'Use .mcp.json configuration file with environment variables instead'
   azure-client-secret:
-    description: The client secret for Azure Service Principal authentication
+    description: '[DEPRECATED] Use environment variables in .mcp.json instead. The client secret for Azure Service Principal authentication.'
     required: false
     default: ''
+    deprecationMessage: 'Use .mcp.json configuration file with environment variables instead'
   azure-tenant-id:
-    description: The tenant ID for Azure Service Principal authentication
+    description: '[DEPRECATED] Use environment variables in .mcp.json instead. The tenant ID for Azure Service Principal authentication.'
     required: false
     default: ''
+    deprecationMessage: 'Use .mcp.json configuration file with environment variables instead'
 
 # Define your outputs here.
 outputs:
