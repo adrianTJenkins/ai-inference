@@ -2,7 +2,7 @@
 
 ## Overview
 
-This guide helps you migrate from the old hardcoded MCP server configuration approach to the new `.mcp.json` file-based configuration.
+This guide helps you migrate from the old hardcoded MCP server configuration approach to the new `.github/.mcp.json` file-based configuration.
 
 ## What Changed?
 
@@ -22,7 +22,7 @@ steps:
 
 ### After (Recommended)
 
-**1. Create `.mcp.json` in your repository:**
+**1. Create `.github/.mcp.json` in your repository:**
 
 ```json
 {
@@ -58,7 +58,7 @@ steps:
 ```yaml
 steps:
   - name: Checkout repository
-    uses: actions/checkout@v4  # Required to access .mcp.json
+    uses: actions/checkout@v4  # Required to access .github/.mcp.json
 
   - name: AI Inference with MCP
     uses: actions/ai-inference@v1
@@ -131,7 +131,7 @@ env:
 
 ## Custom Configuration Path
 
-By default, the action looks for `.mcp.json` in the root of your repository. You can specify a custom path:
+By default, the action looks for `.github/.mcp.json` in your repository. You can specify a custom path:
 
 ```yaml
 steps:
@@ -140,7 +140,7 @@ steps:
     with:
       prompt: 'Your prompt here'
       enable-mcp: true
-      mcp-config-path: '.github/config/mcp.json'
+      mcp-config-path: '.github/config/custom-mcp.json'
 ```
 
 ## Common Migration Patterns
@@ -153,7 +153,7 @@ with:
   github-mcp-token: ${{ secrets.USER_PAT }}
 ```
 
-**After (.mcp.json):**
+**After (.github/.mcp.json):**
 ```json
 {
   "mcpServers": {
@@ -199,7 +199,7 @@ With the new approach, you can now use any MCP server:
 ### "No .mcp.json file found"
 
 Make sure you:
-1. Created the `.mcp.json` file in your repository root
+1. Created the `.github/.mcp.json` file in your repository
 2. Added `uses: actions/checkout@v4` before the inference step
 
 ### "Failed to parse MCP server config"
@@ -221,11 +221,11 @@ Verify that:
 
 - **Current**: Old input parameters still work but are deprecated
 - **Future**: Old parameters will be removed in a future major version
-- **Recommendation**: Migrate to `.mcp.json` configuration as soon as possible
+- **Recommendation**: Migrate to `.github/.mcp.json` configuration as soon as possible
 
 ## Support
 
 For questions or issues:
 - Open an issue in the repository
 - Check the README.md for updated documentation
-- Review `.mcp.json.example` for configuration examples
+- Review `.github/.mcp.json.example` for configuration examples

@@ -55,11 +55,11 @@ inputs:
     required: false
     default: 'false'
   enable-mcp:
-    description: Enable Model Context Protocol integration (requires .mcp.json configuration file)
+    description: Enable Model Context Protocol integration (requires .github/.mcp.json configuration file)
     required: false
     default: 'false'
   mcp-config-path:
-    description: Path to MCP configuration file (defaults to .mcp.json in repository root)
+    description: Path to MCP configuration file (defaults to .github/.mcp.json)
     required: false
     default: ''
   github-mcp-token:

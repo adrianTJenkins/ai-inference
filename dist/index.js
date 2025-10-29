@@ -53596,14 +53596,14 @@ function isPromptYamlFile(filePath) {
 /**
  * Load MCP server configurations from .mcp.json file
  *
- * @param configPath - Path to the .mcp.json file (defaults to .mcp.json in workspace directory)
+ * @param configPath - Path to the .mcp.json file (defaults to .github/.mcp.json in workspace directory)
  * @returns Array of MCPServerConfig objects
  */
 function loadMCPConfig(configPath) {
-    // For GitHub Actions, look in the workspace directory (the repo using the action)
-    // Otherwise, fall back to current working directory
+    // For GitHub Actions, look in the .github directory (the repo using the action)
+    // Otherwise, fall back to .github in current working directory
     const workspaceDir = process.env.GITHUB_WORKSPACE || process.cwd();
-    const filePath = configPath || require$$0.join(workspaceDir, '.mcp.json');
+    const filePath = configPath || require$$0.join(workspaceDir, '.github', '.mcp.json');
     if (!fs.existsSync(filePath)) {
         coreExports.info(`No .mcp.json file found at ${filePath}`);
         return [];

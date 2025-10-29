@@ -24,14 +24,14 @@ export interface MCPConfigFile {
 /**
  * Load MCP server configurations from .mcp.json file
  *
- * @param configPath - Path to the .mcp.json file (defaults to .mcp.json in workspace directory)
+ * @param configPath - Path to the .mcp.json file (defaults to .github/.mcp.json in workspace directory)
  * @returns Array of MCPServerConfig objects
  */
 export function loadMCPConfig(configPath?: string): MCPServerConfig[] {
-  // For GitHub Actions, look in the workspace directory (the repo using the action)
-  // Otherwise, fall back to current working directory
+  // For GitHub Actions, look in the .github directory (the repo using the action)
+  // Otherwise, fall back to .github in current working directory
   const workspaceDir = process.env.GITHUB_WORKSPACE || process.cwd()
-  const filePath = configPath || path.join(workspaceDir, '.mcp.json')
+  const filePath = configPath || path.join(workspaceDir, '.github', '.mcp.json')
 
   if (!fs.existsSync(filePath)) {
     core.info(`No .mcp.json file found at ${filePath}`)

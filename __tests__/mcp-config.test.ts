@@ -64,7 +64,7 @@ describe('mcp-config.ts', () => {
         priority: 1,
       })
       expect(core.info).toHaveBeenCalledWith(
-        expect.stringContaining('Loading MCP configuration from /workspace/.mcp.json'),
+        expect.stringContaining('Loading MCP configuration from /workspace/.github/.mcp.json'),
       )
     })
 

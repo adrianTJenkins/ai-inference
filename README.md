@@ -162,9 +162,9 @@ This action supports integration with Model Context Protocol (MCP) servers, allo
 
 #### Configuring MCP Servers
 
-MCP servers are configured using a `.mcp.json` file in your repository. This file defines which MCP servers to connect to and how to authenticate with them.
+MCP servers are configured using a `.github/.mcp.json` file in your repository. This file defines which MCP servers to connect to and how to authenticate with them.
 
-**Basic Example (.mcp.json):**
+**Basic Example (.github/.mcp.json):**
 
 ```json
 {
@@ -239,7 +239,7 @@ steps:
 > [!NOTE]
 > The GitHub MCP server requires a Personal Access Token (PAT) with appropriate permissions. The workflow's built-in `GITHUB_TOKEN` does not have sufficient permissions for MCP. You can either:
 > - Pass your PAT as the `GITHUB_TOKEN` environment variable (as shown above), which will override the built-in token
-> - Use a different variable name (e.g., `GITHUB_PAT`) in both your `.mcp.json` configuration and workflow environment variables
+> - Use a different variable name (e.g., `GITHUB_PAT`) in both your `.github/.mcp.json` configuration and workflow environment variables
 
 #### MCP Server Types
 
@@ -272,7 +272,7 @@ steps:
 
 #### Custom Configuration Path
 
-By default, the action looks for `.mcp.json` in the root of your repository. You can specify a custom path:
+By default, the action looks for `.github/.mcp.json` in your repository. You can specify a custom path:
 
 ```yaml
 steps:
@@ -281,7 +281,7 @@ steps:
     with:
       prompt: 'Your prompt here'
       enable-mcp: true
-      mcp-config-path: '.github/config/mcp.json'
+      mcp-config-path: '.github/config/custom-mcp.json'
 ```
 
 ## Inputs
@@ -301,9 +301,9 @@ the action:
 | `model`              | The model to use for inference. Must be available in the [GitHub Models](https://github.com/marketplace?type=models) catalog                                  | `openai/gpt-4o`                      |
 | `endpoint`           | The endpoint to use for inference. If you're running this as part of an org, you should probably use the org-specific Models endpoint                         | `https://models.github.ai/inference` |
 | `max-tokens`         | The max number of tokens to generate                                                                                                                          | 200                                  |
-| `enable-mcp`         | Enable Model Context Protocol integration (requires .mcp.json configuration file)                                                                             | `false`                              |
+| `enable-mcp`         | Enable Model Context Protocol integration (requires .github/.mcp.json configuration file)                                                                     | `false`                              |
 | `enable-github-mcp`  | Legacy: Enable Model Context Protocol integration (alias for enable-mcp)                                                                                      | `false`                              |
-| `mcp-config-path`    | Path to MCP configuration file (defaults to .mcp.json in repository root)                                                                                     | `""`                                 |
+| `mcp-config-path`    | Path to MCP configuration file (defaults to .github/.mcp.json)                                                                                                | `""`                                 |
 
 ## Outputs
 
