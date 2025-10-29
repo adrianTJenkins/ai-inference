@@ -171,11 +171,7 @@ MCP servers are configured using a `.mcp.json` file in your repository. This fil
   "mcpServers": {
     "filesystem": {
       "command": "npx",
-      "args": [
-        "-y",
-        "@modelcontextprotocol/server-filesystem",
-        "/path/to/directory"
-      ]
+      "args": ["-y", "@modelcontextprotocol/server-filesystem", "/path/to/directory"]
     },
     "github": {
       "url": "https://api.githubcopilot.com/mcp/",
@@ -241,11 +237,14 @@ steps:
 ```
 
 > [!NOTE]
-> The GitHub MCP server requires a Personal Access Token (PAT) and cannot use the built-in `GITHUB_TOKEN`. Pass it via the `GITHUB_TOKEN` environment variable or use a different variable name in your `.mcp.json`.
+> The GitHub MCP server requires a Personal Access Token (PAT) with appropriate permissions. The workflow's built-in `GITHUB_TOKEN` does not have sufficient permissions for MCP. You can either:
+> - Pass your PAT as the `GITHUB_TOKEN` environment variable (as shown above), which will override the built-in token
+> - Use a different variable name (e.g., `GITHUB_PAT`) in both your `.mcp.json` configuration and workflow environment variables
 
 #### MCP Server Types
 
 **HTTP Servers** - Connect to remote MCP servers via HTTP:
+
 ```json
 {
   "serverName": {
@@ -258,6 +257,7 @@ steps:
 ```
 
 **Stdio Servers** - Run MCP servers as local processes:
+
 ```json
 {
   "serverName": {
@@ -283,7 +283,6 @@ steps:
       enable-mcp: true
       mcp-config-path: '.github/config/mcp.json'
 ```
-
 
 ## Inputs
 
