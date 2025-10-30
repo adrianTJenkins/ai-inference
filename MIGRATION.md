@@ -18,7 +18,7 @@ steps:
       sentry-token: ${{ secrets.SENTRY_TOKEN }}
 ```
 
-### After (Recommended)
+### After (Required)
 
 **1. Create `.github/.mcp.json` in your repository:**
 
@@ -208,9 +208,8 @@ Verify that:
 
 ## Deprecation Timeline
 
-- **Current**: Old input parameters still work but are deprecated
-- **Future**: Old parameters will be removed in a future major version
-- **Recommendation**: Migrate to `.github/.mcp.json` configuration as soon as possible
+- **Current**: Old input parameters have been removed. You must use `.github/.mcp.json` configuration to enable MCP servers.
+- **Migration Required**: All workflows must be updated to use the new configuration file approach.
 
 ## Support
 
