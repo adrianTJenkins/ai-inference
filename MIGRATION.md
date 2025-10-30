@@ -16,8 +16,6 @@ steps:
       enable-mcp: true
       github-mcp-token: ${{ secrets.USER_PAT }}
       sentry-token: ${{ secrets.SENTRY_TOKEN }}
-      datadog-api-key: ${{ secrets.DATADOG_API_KEY }}
-      datadog-app-key: ${{ secrets.DATADOG_APP_KEY }}
 ```
 
 ### After (Recommended)
@@ -41,13 +39,6 @@ steps:
         "SENTRY_ACCESS_TOKEN": "${SENTRY_TOKEN}",
         "SENTRY_HOST": "github.sentry.io"
       }
-    },
-    "datadog": {
-      "url": "https://mcp.datadoghq.com/api/unstable/mcp-server/mcp",
-      "headers": {
-        "DD_API_KEY": "${DATADOG_API_KEY}",
-        "DD_APPLICATION_KEY": "${DATADOG_APP_KEY}"
-      }
     }
   }
 }
@@ -68,8 +59,6 @@ steps:
     env:
       GITHUB_TOKEN: ${{ secrets.USER_PAT }}
       SENTRY_TOKEN: ${{ secrets.SENTRY_TOKEN }}
-      DATADOG_API_KEY: ${{ secrets.DATADOG_API_KEY }}
-      DATADOG_APP_KEY: ${{ secrets.DATADOG_APP_KEY }}
 ```
 
 ## Benefits
