@@ -261,6 +261,43 @@ steps:
 }
 ```
 
+#### Tool Filtering
+
+You can restrict which tools are available from each MCP server by specifying a `tools` array in the server configuration. This is useful for:
+- Limiting access to only necessary tools
+- Improving security by restricting tool availability
+- Reducing token usage by only including relevant tools in the inference context
+
+**Example with Tool Filtering:**
+
+```json
+{
+  "mcpServers": {
+    "github": {
+      "url": "https://api.githubcopilot.com/mcp/",
+      "headers": {
+        "Authorization": "Bearer ${GITHUB_TOKEN}"
+      },
+      "tools": ["search_issues", "issue_read", "search_code"]
+    },
+    "filesystem": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-filesystem", "/workspace"],
+      "tools": ["list_directory", "read_file"]
+    }
+  }
+}
+```
+
+When you specify a `tools` array:
+1. The action connects to the MCP server and retrieves all available tools
+2. It filters the tools to only include those that are:
+   - Listed in your `tools` configuration AND
+   - Actually available from the server
+3. Only the filtered tools are passed to the AI model for inference
+
+If you omit the `tools` field, all available tools from the server will be used (default behavior).
+
 #### Custom Configuration Path
 
 By default, the action looks for `.github/.mcp.json` in your repository. You can specify a custom path:
