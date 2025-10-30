@@ -229,6 +229,7 @@ steps:
 
 > [!NOTE]
 > The GitHub MCP server requires a Personal Access Token (PAT) with appropriate permissions. The workflow's built-in `GITHUB_TOKEN` does not have sufficient permissions for MCP. You can either:
+>
 > - Pass your PAT as the `GITHUB_TOKEN` environment variable (as shown above), which will override the built-in token
 > - Use a different variable name (e.g., `GITHUB_PAT`) in both your `.github/.mcp.json` configuration and workflow environment variables
 
@@ -264,6 +265,7 @@ steps:
 #### Tool Filtering
 
 You can restrict which tools are available from each MCP server by specifying a `tools` array in the server configuration. This is useful for:
+
 - Limiting access to only necessary tools
 - Improving security by restricting tool availability
 - Reducing token usage by only including relevant tools in the inference context
@@ -290,6 +292,7 @@ You can restrict which tools are available from each MCP server by specifying a 
 ```
 
 When you specify a `tools` array:
+
 1. The action connects to the MCP server and retrieves all available tools
 2. It filters the tools to only include those that are:
    - Listed in your `tools` configuration AND
