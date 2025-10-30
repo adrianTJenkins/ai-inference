@@ -610,5 +610,153 @@ describe('main.ts', () => {
       expect(core.info).toHaveBeenCalledWith('📊 Connected servers: GitHub, Datadog')
       expect(mockMultiMcpInference).toHaveBeenCalledWith(expect.any(Object), [mockGitHubClient, mockDatadogClient])
     })
+
+    it('uses tool filtering when tools are specified in server config', async () => {
+      const mockGitHubClient = {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        client: {} as any,
+        tools: [
+          {type: 'function', function: {name: 'search_issues'}},
+          {type: 'function', function: {name: 'get_issue'}},
+        ],
+        config: {id: 'github', name: 'GitHub', type: 'http', url: 'github-test', tools: ['search_issues', 'get_issue']},
+        connected: true,
+      }
+
+      mockInputs({
+        prompt: 'Search GitHub issues',
+        'system-prompt': 'You are a GitHub assistant.',
+        'enable-mcp': 'true',
+      })
+
+      mockLoadMCPConfig.mockReturnValue([
+        {
+          id: 'github',
+          name: 'GitHub',
+          type: 'http',
+          url: 'github-test',
+          tools: ['search_issues', 'get_issue'],
+        },
+      ])
+
+      mockConnectWithFiltering.mockResolvedValueOnce(mockGitHubClient)
+
+      await run()
+
+      expect(mockLoadMCPConfig).toHaveBeenCalled()
+      expect(mockConnectWithFiltering).toHaveBeenCalledWith(
+        expect.objectContaining({
+          id: 'github',
+          name: 'GitHub',
+          tools: ['search_issues', 'get_issue'],
+        }),
+        ['search_issues', 'get_issue'],
+      )
+      expect(mockConnect).not.toHaveBeenCalled()
+      expect(core.info).toHaveBeenCalledWith(
+        expect.stringContaining('Using tool filtering for GitHub: search_issues, get_issue'),
+      )
+      expect(mockMultiMcpInference).toHaveBeenCalledWith(expect.any(Object), [mockGitHubClient])
+    })
+
+    it('uses connectToMCPServer when no tools are specified', async () => {
+      const mockGitHubClient = {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        client: {} as any,
+        tools: [
+          {type: 'function', function: {name: 'search_issues'}},
+          {type: 'function', function: {name: 'get_issue'}},
+          {type: 'function', function: {name: 'search_code'}},
+        ],
+        config: {id: 'github', name: 'GitHub', type: 'http', url: 'github-test'},
+        connected: true,
+      }
+
+      mockInputs({
+        prompt: 'Search GitHub',
+        'system-prompt': 'You are a GitHub assistant.',
+        'enable-mcp': 'true',
+      })
+
+      mockLoadMCPConfig.mockReturnValue([
+        {
+          id: 'github',
+          name: 'GitHub',
+          type: 'http',
+          url: 'github-test',
+        },
+      ])
+
+      mockConnect.mockResolvedValueOnce(mockGitHubClient)
+
+      await run()
+
+      expect(mockConnect).toHaveBeenCalledWith(
+        expect.objectContaining({
+          id: 'github',
+          name: 'GitHub',
+        }),
+      )
+      expect(mockConnectWithFiltering).not.toHaveBeenCalled()
+      expect(mockMultiMcpInference).toHaveBeenCalledWith(expect.any(Object), [mockGitHubClient])
+    })
+
+    it('handles mixed tool filtering - some servers with tools, some without', async () => {
+      const mockGitHubClient = {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        client: {} as any,
+        tools: [{type: 'function', function: {name: 'search_issues'}}],
+        config: {id: 'github', name: 'GitHub', type: 'http', url: 'github-test', tools: ['search_issues']},
+        connected: true,
+      }
+
+      const mockDatadogClient = {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        client: {} as any,
+        tools: [
+          {type: 'function', function: {name: 'get_dashboard'}},
+          {type: 'function', function: {name: 'search_monitors'}},
+          {type: 'function', function: {name: 'get_metrics'}},
+        ],
+        config: {id: 'datadog', name: 'Datadog', type: 'http', url: 'datadog-test'},
+        connected: true,
+      }
+
+      mockInputs({
+        prompt: 'Monitor and search',
+        'system-prompt': 'You are an assistant.',
+        'enable-mcp': 'true',
+      })
+
+      mockLoadMCPConfig.mockReturnValue([
+        {
+          id: 'github',
+          name: 'GitHub',
+          type: 'http',
+          url: 'github-test',
+          tools: ['search_issues'],
+        },
+        {
+          id: 'datadog',
+          name: 'Datadog',
+          type: 'http',
+          url: 'datadog-test',
+        },
+      ])
+
+      mockConnectWithFiltering.mockResolvedValueOnce(mockGitHubClient)
+      mockConnect.mockResolvedValueOnce(mockDatadogClient)
+
+      await run()
+
+      expect(mockConnectWithFiltering).toHaveBeenCalledTimes(1)
+      expect(mockConnectWithFiltering).toHaveBeenCalledWith(
+        expect.objectContaining({id: 'github', tools: ['search_issues']}),
+        ['search_issues'],
+      )
+      expect(mockConnect).toHaveBeenCalledTimes(1)
+      expect(mockConnect).toHaveBeenCalledWith(expect.objectContaining({id: 'datadog'}))
+      expect(mockMultiMcpInference).toHaveBeenCalledWith(expect.any(Object), [mockGitHubClient, mockDatadogClient])
+    })
   })
 })

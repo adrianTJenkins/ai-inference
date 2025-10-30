@@ -362,4 +362,113 @@ describe('mcp-config.ts', () => {
       delete process.env.AUTH_TOKEN
     })
   })
+
+  describe('tools filtering configuration', () => {
+    it('loads tools array from server configuration', () => {
+      mockExistsSync.mockReturnValue(true)
+      mockReadFileSync.mockReturnValue(
+        JSON.stringify({
+          mcpServers: {
+            github: {
+              url: 'https://api.githubcopilot.com/mcp/',
+              headers: {
+                Authorization: 'Bearer test-token',
+              },
+              tools: ['list_files', 'create_file', 'read_file'],
+            },
+          },
+        }),
+      )
+
+      const result = loadMCPConfig()
+
+      expect(result).toHaveLength(1)
+      expect(result[0].tools).toEqual(['list_files', 'create_file', 'read_file'])
+    })
+
+    it('handles configuration without tools array', () => {
+      mockExistsSync.mockReturnValue(true)
+      mockReadFileSync.mockReturnValue(
+        JSON.stringify({
+          mcpServers: {
+            github: {
+              url: 'https://api.githubcopilot.com/mcp/',
+              headers: {},
+            },
+          },
+        }),
+      )
+
+      const result = loadMCPConfig()
+
+      expect(result).toHaveLength(1)
+      expect(result[0].tools).toBeUndefined()
+    })
+
+    it('handles empty tools array', () => {
+      mockExistsSync.mockReturnValue(true)
+      mockReadFileSync.mockReturnValue(
+        JSON.stringify({
+          mcpServers: {
+            github: {
+              url: 'https://api.githubcopilot.com/mcp/',
+              headers: {},
+              tools: [],
+            },
+          },
+        }),
+      )
+
+      const result = loadMCPConfig()
+
+      expect(result).toHaveLength(1)
+      expect(result[0].tools).toEqual([])
+    })
+
+    it('loads multiple servers with different tool configurations', () => {
+      mockExistsSync.mockReturnValue(true)
+      mockReadFileSync.mockReturnValue(
+        JSON.stringify({
+          mcpServers: {
+            github: {
+              url: 'https://api.githubcopilot.com/mcp/',
+              headers: {},
+              tools: ['github_list_repos', 'github_get_issue'],
+            },
+            filesystem: {
+              command: 'npx',
+              args: ['-y', '@modelcontextprotocol/server-filesystem', '/path'],
+              tools: ['list_directory', 'read_file', 'write_file'],
+            },
+            unrestricted: {
+              command: 'npx',
+              args: ['-y', '@modelcontextprotocol/server-other'],
+            },
+          },
+        }),
+      )
+
+      const result = loadMCPConfig()
+
+      expect(result).toHaveLength(3)
+      expect(result[0].tools).toEqual(['github_list_repos', 'github_get_issue'])
+      expect(result[1].tools).toEqual(['list_directory', 'read_file', 'write_file'])
+      expect(result[2].tools).toBeUndefined()
+    })
+
+    it('preserves tools array in processConfigWithEnvVars', () => {
+      const config = {
+        mcpServers: {
+          test: {
+            url: 'https://example.com',
+            tools: ['tool1', 'tool2', 'tool3'],
+          },
+        },
+      }
+
+      const result = processConfigWithEnvVars(config)
+
+      expect(result.mcpServers.test.tools).toEqual(['tool1', 'tool2', 'tool3'])
+    })
+  })
 })

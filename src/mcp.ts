@@ -50,6 +50,7 @@ export interface MCPServerConfig {
 
   readonly?: boolean
   priority?: number
+  tools?: string[]
 }
 
 export interface MCPServerClient {

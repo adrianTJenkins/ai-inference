@@ -12,6 +12,7 @@ export interface MCPConfigServer {
   env?: Record<string, string>
   url?: string
   headers?: Record<string, string>
+  tools?: string[]
 }
 
 /**
@@ -106,6 +107,11 @@ function parseMCPServerConfig(serverName: string, config: MCPConfigServer, prior
     serverConfig.env = config.env || {}
   }
 
+  // Add tools filter if specified
+  if (config.tools && Array.isArray(config.tools)) {
+    serverConfig.tools = config.tools
+  }
+
   return serverConfig
 }
 
@@ -158,6 +164,11 @@ export function processConfigWithEnvVars(config: MCPConfigFile): MCPConfigFile {
       for (const [key, value] of Object.entries(serverConfig.headers)) {
         processedServer.headers[key] = substituteEnvVars(value)
       }
+    }
+
+    // Process tools (no env var substitution needed, just copy array)
+    if (serverConfig.tools && Array.isArray(serverConfig.tools)) {
+      processedServer.tools = [...serverConfig.tools]
     }
 
     processed.mcpServers[serverName] = processedServer

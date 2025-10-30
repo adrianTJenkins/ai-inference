@@ -7,6 +7,7 @@ This guide helps you migrate from the old hardcoded MCP server configuration app
 ## What Changed?
 
 ### Before (Deprecated)
+
 ```yaml
 steps:
   - name: AI Inference with MCP
@@ -49,7 +50,7 @@ steps:
 ```yaml
 steps:
   - name: Checkout repository
-    uses: actions/checkout@v4  # Required to access .github/.mcp.json
+    uses: actions/checkout@v4 # Required to access .github/.mcp.json
 
   - name: AI Inference with MCP
     uses: actions/ai-inference@v1
@@ -107,6 +108,7 @@ steps:
 ## Environment Variable Substitution
 
 The configuration supports two formats:
+
 - `${VAR_NAME}` (recommended)
 - `$VAR_NAME`
 
@@ -137,12 +139,14 @@ steps:
 ### GitHub MCP Server
 
 **Before:**
+
 ```yaml
 with:
   github-mcp-token: ${{ secrets.USER_PAT }}
 ```
 
 **After (.github/.mcp.json):**
+
 ```json
 {
   "mcpServers": {
@@ -158,6 +162,7 @@ with:
 ```
 
 **Workflow:**
+
 ```yaml
 env:
   GITHUB_TOKEN: ${{ secrets.USER_PAT }}
@@ -172,12 +177,7 @@ With the new approach, you can now use any MCP server:
   "mcpServers": {
     "filesystem": {
       "command": "npx",
-      "args": [
-        "-y",
-        "@modelcontextprotocol/server-filesystem",
-        "/workspace/docs",
-        "/workspace/src"
-      ]
+      "args": ["-y", "@modelcontextprotocol/server-filesystem", "/workspace/docs", "/workspace/src"]
     }
   }
 }
@@ -188,12 +188,14 @@ With the new approach, you can now use any MCP server:
 ### "No .mcp.json file found"
 
 Make sure you:
+
 1. Created the `.github/.mcp.json` file in your repository
 2. Added `uses: actions/checkout@v4` before the inference step
 
 ### "Failed to parse MCP server config"
 
 Check that:
+
 1. Your JSON is valid (use a JSON validator)
 2. HTTP servers have `url` property
 3. Stdio servers have `command` property
@@ -202,6 +204,7 @@ Check that:
 ### "Failed to connect to server"
 
 Verify that:
+
 1. Environment variables are set in the workflow
 2. Credentials are correct in GitHub Secrets
 3. Server URLs are accessible from GitHub Actions runners
@@ -214,6 +217,7 @@ Verify that:
 ## Support
 
 For questions or issues:
+
 - Open an issue in the repository
 - Check the README.md for updated documentation
 - Review `.github/.mcp.json.example` for configuration examples
