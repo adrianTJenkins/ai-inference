@@ -1,16 +1,7 @@
 import * as core from '@actions/core'
 import * as fs from 'fs'
 import * as tmp from 'tmp'
-import {
-  connectToMCPServerWithFiltering,
-  MCPServerRegistry,
-  GitHubMCPFactory,
-  SentryMCPFactory,
-  DatadogMCPFactory,
-  AzureMCPFactory,
-  type MCPServerCredentials,
-  type MCPServerClient,
-} from './mcp.js'
+import {connectToMCPServer, type MCPServerClient} from './mcp.js'
 import {simpleInference, multiMcpInference} from './inference.js'
 import {loadContentFromFileOrInput, buildInferenceRequest} from './helpers.js'
 import {
@@ -20,6 +11,7 @@ import {
   PromptConfig,
   parseFileTemplateVariables,
 } from './prompt.js'
+import {loadMCPConfig} from './mcp-config.js'
 
 /**
  * The main function for the action.
@@ -69,15 +61,6 @@ export async function run(): Promise<void> {
       throw new Error('GITHUB_TOKEN is not set')
     }
 
-    // Get GitHub MCP token (use dedicated token if provided, otherwise fall back to main token)
-    const githubMcpToken = core.getInput('github-mcp-token') || token
-    const sentryToken = core.getInput('sentry-token') || process.env.SENTRY_TOKEN
-    const datadogApiKey = core.getInput('datadog-api-key') || process.env.DATADOG_API_KEY
-    const datadogAppKey = core.getInput('datadog-app-key') || process.env.DATADOG_APP_KEY
-    const azureClientId = core.getInput('azure-client-id') || process.env.AZURE_CLIENT_ID
-    const azureClientSecret = core.getInput('azure-client-secret') || process.env.AZURE_CLIENT_SECRET
-    const azureTenantId = core.getInput('azure-tenant-id') || process.env.AZURE_TENANT_ID
-
     const endpoint = core.getInput('endpoint')
 
     // Build the inference request with pre-processed messages and response format
@@ -105,88 +88,41 @@ export async function run(): Promise<void> {
     let modelResponse: string | null = null
 
     if (enableMcp) {
-      core.info('🚀 Starting multi-server MCP setup...')
+      core.info('🚀 Starting MCP setup from configuration file...')
 
-      // Setup multi-server registry
-      const registry = new MCPServerRegistry()
-      registry.register(new GitHubMCPFactory())
-      registry.register(new SentryMCPFactory())
-      registry.register(new DatadogMCPFactory())
-      registry.register(new AzureMCPFactory())
+      // Load MCP server configurations from .mcp.json
+      const mcpConfigPath = core.getInput('mcp-config-path') || undefined
+      const serverConfigs = loadMCPConfig(mcpConfigPath)
 
-      // Build credentials map from collected credentials
-      const credentialsMap = new Map<string, MCPServerCredentials>()
-
-      if (githubMcpToken) {
-        credentialsMap.set('github', {token: githubMcpToken})
-      }
-
-      if (sentryToken) {
-        credentialsMap.set('sentry', {token: sentryToken})
-      }
-
-      if (datadogApiKey && datadogAppKey) {
-        credentialsMap.set('datadog', {apiKey: datadogApiKey, appKey: datadogAppKey})
-      }
-
-      if (azureClientId && azureClientSecret && azureTenantId) {
-        credentialsMap.set('azure', {
-          clientId: azureClientId,
-          clientSecret: azureClientSecret,
-          tenantId: azureTenantId,
-        })
-      }
-
-      // Get server availability and configurations
-      const {available, unavailable, summary} = registry.createConfigsWithAvailability(credentialsMap)
-
-      // Connect to available servers with tool filtering
-      const connectedClients: MCPServerClient[] = []
-      for (const config of available) {
-        const factory = registry.getFactory(config.id)
-        if (!factory) {
-          core.warning(`❌ No factory found for ${config.name}`)
-          continue
-        }
-
-        const allowedTools = factory.getAllowedTools()
-        core.info(`🔗 Connecting to ${config.name} with allowed tools: ${allowedTools.join(', ')}...`)
-        const client = await connectToMCPServerWithFiltering(config, allowedTools)
-        if (client) {
-          connectedClients.push(client)
-        } else {
-          core.warning(`❌ Failed to connect to ${config.name}`)
-        }
-      }
-
-      // Graceful degradation logic
-      if (connectedClients.length === 0) {
-        core.warning('⚠️ No MCP servers connected successfully, falling back to simple inference')
-        if (unavailable.length > 0) {
-          core.info(`💡 Unavailable servers: ${unavailable.map(s => `${s.serverId} (${s.reason})`).join(', ')}`)
-        }
+      if (serverConfigs.length === 0) {
+        core.warning('⚠️ No MCP servers configured in .mcp.json, falling back to simple inference')
         modelResponse = await simpleInference(inferenceRequest)
       } else {
-        // Check minimum server requirement (can be configured via input)
-        const minServers = parseInt(core.getInput('min-servers') || '1', 10)
-        if (!registry.hasMinimumServers({available, unavailable, summary}, minServers)) {
-          core.warning(
-            `⚠️ Only ${connectedClients.length} servers connected, but ${minServers} required. Proceeding with available servers.`,
-          )
+        // Connect to configured servers
+        const connectedClients: MCPServerClient[] = []
+        for (const config of serverConfigs) {
+          core.info(`🔗 Connecting to ${config.name}...`)
+          const client = await connectToMCPServer(config)
+          if (client) {
+            connectedClients.push(client)
+          } else {
+            core.warning(`❌ Failed to connect to ${config.name}`)
+          }
         }
 
-        core.info(`🎯 Running multi-server inference with ${connectedClients.length} connected servers`)
+        // Graceful degradation logic
+        if (connectedClients.length === 0) {
+          core.warning('⚠️ No MCP servers connected successfully, falling back to simple inference')
+          modelResponse = await simpleInference(inferenceRequest)
+        } else {
+          core.info(`🎯 Running multi-server inference with ${connectedClients.length} connected servers`)
 
-        // Log server status summary
-        const connectedNames = connectedClients.map(c => c.config.name).join(', ')
-        core.info(`📊 Connected servers: ${connectedNames}`)
+          // Log server status summary
+          const connectedNames = connectedClients.map(c => c.config.name).join(', ')
+          core.info(`📊 Connected servers: ${connectedNames}`)
 
-        if (unavailable.length > 0) {
-          const unavailableNames = unavailable.map(s => s.serverId).join(', ')
-          core.info(`📊 Unavailable servers: ${unavailableNames}`)
+          modelResponse = await multiMcpInference(inferenceRequest, connectedClients)
         }
-
-        modelResponse = await multiMcpInference(inferenceRequest, connectedClients)
       }
     } else {
       core.info('📝 Running simple inference without MCP tools')

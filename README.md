@@ -156,43 +156,124 @@ steps:
       cat "${{ steps.inference.outputs.response-file }}"
 ```
 
-### GitHub MCP Integration (Model Context Protocol)
+### MCP Integration (Model Context Protocol)
 
-This action now supports **read-only** integration with the GitHub-hosted Model
-Context Protocol (MCP) server, which provides access to GitHub tools like
-repository management, issue tracking, and pull request operations.
+This action supports integration with Model Context Protocol (MCP) servers, allowing the AI model to access external tools and services.
+
+#### Configuring MCP Servers
+
+MCP servers are configured using a `.github/.mcp.json` file in your repository. This file defines which MCP servers to connect to and how to authenticate with them.
+
+**Basic Example (.github/.mcp.json):**
+
+```json
+{
+  "mcpServers": {
+    "filesystem": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-filesystem", "/path/to/directory"]
+    },
+    "github": {
+      "url": "https://api.githubcopilot.com/mcp/",
+      "headers": {
+        "Authorization": "Bearer ${GITHUB_TOKEN}",
+        "X-MCP-Readonly": "true"
+      }
+    }
+  }
+}
+```
+
+**Using Environment Variables:**
+
+The configuration supports environment variable substitution using `${VAR_NAME}` or `$VAR_NAME` syntax. This is useful for keeping sensitive credentials out of your repository.
+
+```json
+{
+  "mcpServers": {
+    "github": {
+      "url": "https://api.githubcopilot.com/mcp/",
+      "headers": {
+        "Authorization": "Bearer ${GITHUB_TOKEN}"
+      }
+    },
+    "sentry": {
+      "command": "npx",
+      "args": ["-y", "@sentry/mcp-server@latest", "--host=github.sentry.io"],
+      "env": {
+        "SENTRY_ACCESS_TOKEN": "${SENTRY_TOKEN}",
+        "SENTRY_HOST": "github.sentry.io"
+      }
+    }
+  }
+}
+```
+
+**Workflow Example:**
+
+```yaml
+steps:
+  - name: Checkout repository
+    uses: actions/checkout@v4
+
+  - name: AI Inference with MCP
+    id: inference
+    uses: actions/ai-inference@v1
+    with:
+      prompt: 'Analyze the repository and list any open issues'
+      enable-mcp: true
+    env:
+      GITHUB_TOKEN: ${{ secrets.USER_PAT }}
+      SENTRY_TOKEN: ${{ secrets.SENTRY_TOKEN }}
+```
 
 > [!NOTE]
-> The GitHub MCP integration requires a Personal Access Token (PAT) and cannot use the built-in `GITHUB_TOKEN`.
+> The GitHub MCP server requires a Personal Access Token (PAT) with appropriate permissions. The workflow's built-in `GITHUB_TOKEN` does not have sufficient permissions for MCP. You can either:
+> - Pass your PAT as the `GITHUB_TOKEN` environment variable (as shown above), which will override the built-in token
+> - Use a different variable name (e.g., `GITHUB_PAT`) in both your `.github/.mcp.json` configuration and workflow environment variables
+
+#### MCP Server Types
+
+**HTTP Servers** - Connect to remote MCP servers via HTTP:
+
+```json
+{
+  "serverName": {
+    "url": "https://api.example.com/mcp/",
+    "headers": {
+      "Authorization": "Bearer ${TOKEN}"
+    }
+  }
+}
+```
+
+**Stdio Servers** - Run MCP servers as local processes:
+
+```json
+{
+  "serverName": {
+    "command": "npx",
+    "args": ["-y", "@modelcontextprotocol/server-filesystem", "/path"],
+    "env": {
+      "DEBUG": "1"
+    }
+  }
+}
+```
+
+#### Custom Configuration Path
+
+By default, the action looks for `.github/.mcp.json` in your repository. You can specify a custom path:
 
 ```yaml
 steps:
-  - name: AI Inference with GitHub Tools
-    id: inference
-    uses: actions/ai-inference@v1.2
+  - name: AI Inference with Custom MCP Config
+    uses: actions/ai-inference@v1
     with:
-      prompt: 'List my open pull requests and create a summary'
-      enable-github-mcp: true
-      token: ${{ secrets.USER_PAT }}
+      prompt: 'Your prompt here'
+      enable-mcp: true
+      mcp-config-path: '.github/config/custom-mcp.json'
 ```
-
-If you want, you can use separate tokens for the AI inference endpoint
-and the GitHub MCP server:
-
-```yaml
-steps:
-  - name: AI Inference with Separate MCP Token
-    id: inference
-    uses: actions/ai-inference@v1.2
-    with:
-      prompt: 'List my open pull requests and create a summary'
-      enable-github-mcp: true
-      token: ${{ secrets.GITHUB_TOKEN }}
-      github-mcp-token: ${{ secrets.USER_PAT }}
-```
-
-When MCP is enabled, the AI model will have access to GitHub tools and can
-perform actions like searching issues and PRs.
 
 ## Inputs
 
@@ -211,8 +292,9 @@ the action:
 | `model`              | The model to use for inference. Must be available in the [GitHub Models](https://github.com/marketplace?type=models) catalog                                  | `openai/gpt-4o`                      |
 | `endpoint`           | The endpoint to use for inference. If you're running this as part of an org, you should probably use the org-specific Models endpoint                         | `https://models.github.ai/inference` |
 | `max-tokens`         | The max number of tokens to generate                                                                                                                          | 200                                  |
-| `enable-github-mcp`  | Enable Model Context Protocol integration with GitHub tools                                                                                                   | `false`                              |
-| `github-mcp-token`   | Token to use for GitHub MCP server (defaults to the main token if not specified). This must be a PAT for MCP to work                                          | `""`                                 |
+| `enable-mcp`         | Enable Model Context Protocol integration (requires .github/.mcp.json configuration file)                                                                     | `false`                              |
+| `enable-github-mcp`  | Legacy: Enable Model Context Protocol integration (alias for enable-mcp)                                                                                      | `false`                              |
+| `mcp-config-path`    | Path to MCP configuration file (defaults to .github/.mcp.json)                                                                                                | `""`                                 |
 
 ## Outputs
 

@@ -51,39 +51,15 @@ inputs:
     required: false
     default: ${{ github.token }}
   enable-github-mcp:
-    description: Enable Model Context Protocol integration with GitHub tools
+    description: Enable Model Context Protocol integration (legacy alias for enable-mcp)
     required: false
     default: 'false'
   enable-mcp:
-    description: Enable Model Context Protocol integration with all available servers
+    description: Enable Model Context Protocol integration (requires .github/.mcp.json configuration file)
     required: false
     default: 'false'
-  github-mcp-token:
-    description: The token to use for GitHub MCP server (defaults to the main token if not specified). This must be a PAT for MCP to work.
-    required: false
-    default: ''
-  sentry-token:
-    description: The token to use for Sentry MCP server
-    required: false
-    default: ''
-  datadog-api-key:
-    description: The API key to use for Datadog MCP server
-    required: false
-    default: ''
-  datadog-app-key:
-    description: The application key to use for Datadog MCP server
-    required: false
-    default: ''
-  azure-client-id:
-    description: The client ID for Azure Service Principal authentication
-    required: false
-    default: ''
-  azure-client-secret:
-    description: The client secret for Azure Service Principal authentication
-    required: false
-    default: ''
-  azure-tenant-id:
-    description: The tenant ID for Azure Service Principal authentication
+  mcp-config-path:
+    description: Path to MCP configuration file (defaults to .github/.mcp.json)
     required: false
     default: ''
 
