@@ -1,7 +1,7 @@
 import * as core from '@actions/core'
 import * as fs from 'fs'
 import * as tmp from 'tmp'
-import {connectToMCPServer, type MCPServerClient} from './mcp.js'
+import {connectToMCPServer, connectToMCPServerWithFiltering, type MCPServerClient} from './mcp.js'
 import {simpleInference, multiMcpInference} from './inference.js'
 import {loadContentFromFileOrInput, buildInferenceRequest} from './helpers.js'
 import {
@@ -102,7 +102,16 @@ export async function run(): Promise<void> {
         const connectedClients: MCPServerClient[] = []
         for (const config of serverConfigs) {
           core.info(`🔗 Connecting to ${config.name}...`)
-          const client = await connectToMCPServer(config)
+          let client: MCPServerClient | null = null
+
+          // Use filtering if tools are specified in config
+          if (config.tools && config.tools.length > 0) {
+            core.info(`🔧 Using tool filtering for ${config.name}: ${config.tools.join(', ')}`)
+            client = await connectToMCPServerWithFiltering(config, config.tools)
+          } else {
+            client = await connectToMCPServer(config)
+          }
+
           if (client) {
             connectedClients.push(client)
           } else {
