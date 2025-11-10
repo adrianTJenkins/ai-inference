@@ -10,7 +10,14 @@ export class GitHubMCPFactory extends MCPServerFactory {
         return 'GitHub MCP';
     }
     getAllowedTools() {
-        return ['search_issues', 'issue_read', 'search_code', 'search_pull_requests', 'pull_request_read'];
+        return [
+            'search_issues',
+            'issue_read',
+            'search_code',
+            'search_pull_requests',
+            'pull_request_read',
+            'assign_copilot_to_issue',
+        ];
     }
     isCredentialsValid(credentials) {
         return !!credentials.token;
