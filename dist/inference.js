@@ -55,7 +55,7 @@ export async function multiMcpInference(request, mcpClients) {
     // Start with the pre-processed messages
     const messages = [...request.messages];
     let iterationCount = 0;
-    const maxIterations = 5; // Prevent infinite loops
+    const maxIterations = 16; // Prevent infinite loops
     let finalMessage = false;
     while (iterationCount < maxIterations) {
         iterationCount++;
