@@ -102,7 +102,7 @@ export async function multiMcpInference(
   const messages: ChatMessage[] = [...request.messages]
 
   let iterationCount = 0
-  const maxIterations = 5 // Prevent infinite loops
+  const maxIterations = 16 // Prevent infinite loops
   let finalMessage = false
 
   while (iterationCount < maxIterations) {
