@@ -316,8 +316,8 @@ describe('inference.ts', () => {
 
       const result = await mcpInference(mockRequest, mockMcpClient)
 
-      expect(mockCreate).toHaveBeenCalledTimes(5) // Max iterations reached
-      expect(core.warning).toHaveBeenCalledWith('Multi-MCP inference loop exceeded maximum iterations (5)')
+      expect(mockCreate).toHaveBeenCalledTimes(16) // Max iterations reached
+      expect(core.warning).toHaveBeenCalledWith('Multi-MCP inference loop exceeded maximum iterations (16)')
       expect(result).toBe('Using tool again.') // Last assistant message
     })
 
